@@ -25,7 +25,6 @@ export function MatrixRain({ color = '#00ff66', speed = 33 }: Props) {
       const columns = Math.floor(canvas.width / fontSize);
       drops = new Array(columns).fill(1);
     };
-    
 
     resize();
     window.addEventListener('resize', resize);
