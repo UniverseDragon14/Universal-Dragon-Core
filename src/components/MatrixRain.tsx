@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 // எக்ஸ்டர்னல் காம்போனென்ட்ஸ் (உங்க ப்ராஜெக்ட்ல ஏற்கனவே இருப்பவை)
-import { Header } from './components/Header';
-import { TelemetryPanel } from './components/TelemetryPanel';
-import { SpatialMap } from './components/SpatialMap';
-import { Terminal } from './components/Terminal';
-import { ControlPanel } from './components/ControlPanel';
-import { TelemetryData, MapPoint } from './types';
-import { MOCK_LOG_MESSAGES } from './constants';
+import { Header } from './Header';
+import { TelemetryPanel } from './TelemetryPanel';
+import { SpatialMap } from './SpatialMap';
+import { Terminal } from './Terminal';
+import { ControlPanel } from './ControlPanel';
+import { TelemetryData, MapPoint } from '../types';
+import { MOCK_LOG_MESSAGES } from '../constants';
 
 // ==========================================
 // 1. TYPES & SECURE KEYS
@@ -45,7 +45,7 @@ function MarkdownView({ text }: { text: string }) {
 // ==========================================
 // 3. INTERNAL COMPONENT: DRAGON MATRIX RAIN
 // ==========================================
-function MatrixRain({ color = '#0f0' }: { color?: string }) {
+function MatrixRainCanvas({ color = '#0f0' }: { color?: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
     const canvas = canvasRef.current; if (!canvas) return;
@@ -74,7 +74,7 @@ function MatrixRain({ color = '#0f0' }: { color?: string }) {
 // ==========================================
 // 4. MAIN APP CORE: DRAGON NOVA ULTIMATE
 // ==========================================
-export default function App() {
+export function MatrixRain() {
   const [message, setMessage] = useState('');
   const [liveReply, setLiveReply] = useState('');
   const [loading, setLoading] = useState(false);
@@ -98,6 +98,7 @@ export default function App() {
 
   // --- Telemetry Animation ---
   const [cpuData, setCpuData] = useState<TelemetryData[]>(Array.from({ length: 20 }, (_, i) => ({ time: i, usage: 30, temp: 45 })));
+  const [mapData, setMapData] = useState<MapPoint[]>(Array.from({ length: 50 }, () => ({ x: Math.random() * 200 - 100, y: Math.random() * 200 - 100, z: Math.random() * 100 })));
   useEffect(() => {
     const interval = setInterval(() => {
       setCpuData(prev => [...prev.slice(1), { time: prev[prev.length-1].time + 1, usage: Math.floor(Math.random()*40)+20, temp: 45 }]);
@@ -165,7 +166,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-black font-mono transition-colors duration-1000" style={{ color: modeColor }}>
-      <MatrixRain color={modeColor} />
+      <MatrixRainCanvas color={modeColor} />
       <div className="pointer-events-none fixed inset-0 z-50 opacity-[0.05] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]" />
       
       <Header uptime="NOVA_GOD_MODE_ACTIVE" />
@@ -221,7 +222,7 @@ export default function App() {
                 />
                 <button onClick={sendMessage} className="px-8 py-2 font-black text-xs transition-transform active:scale-95" style={{ backgroundColor: modeColor, color: '#000' }}>EXECUTE</button>
               </div>
-              {image && <div className="text-[10px] mt-2 opacity-70 italic text-pink-500 animate-pulse">>> VISUAL_PAYLOAD_READY // {image.mime_type}</div>}
+              {image && <div className="text-[10px] mt-2 opacity-70 italic text-pink-500 animate-pulse">&gt;&gt; VISUAL_PAYLOAD_READY // {image.mime_type}</div>}
             </div>
           </div>
         </div>
@@ -241,4 +242,3 @@ export default function App() {
     </div>
   );
 }
-

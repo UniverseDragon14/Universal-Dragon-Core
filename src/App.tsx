@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Header } from './components/Header';
 import { TelemetryPanel } from './components/TelemetryPanel';
 import { SpatialMap } from './components/SpatialMap';
@@ -481,6 +482,7 @@ export default function App() {
           display: none;
         }
       `}</style>
+      <Analytics />
     </div>
   );
 }
