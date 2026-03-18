@@ -8,7 +8,7 @@ export const config = {
   runtime: 'edge',
 };
 
-const GEMINI_MODEL = 'gemini-1.5-flash';
+const GEMINI_MODEL = 'gemini-1.5-pro';
 
 type ChatHistoryItem = {
   role: 'user' | 'assistant' | 'model';
