@@ -3,7 +3,7 @@
 // NOVA v15.0 [OMNIPOTENT AGI CORE - FINAL]
 // ==========================================
 // force redeploy
-'X-NOVA-VERSION': '15.0-OMNIPOTENT-v2',
+
 export const config = {
   runtime: 'edge',
 };
