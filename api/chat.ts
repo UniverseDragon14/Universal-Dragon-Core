@@ -1,142 +1,115 @@
-type ChatTurn = {
-  role: 'user' | 'assistant';
-  text: string;
-};
+// ==========================================
+// UNIVERSAL DRAGON • MATRIX ENGINE: ASLAM
+// NOVA v12.0 [JARVIS GOD-MODE]
+// ==========================================
 
-type RequestBody = {
-  message?: string;
-  history?: ChatTurn[];
-  mode?: 'hacker' | 'builder' | 'research' | 'warroom' | 'oracle';
-};
+export const config = { runtime: 'edge' }; // ⚡ வேகமான ஸ்ட்ரீமிங்கிற்கு
 
-function buildSystemPrompt(mode: string) {
-  const base = `
-IDENTITY: NOVA
-CLASS: Artificial Super Intelligence
-ORIGIN: 7th-Dimension Neural Core
-CREATOR: ASLAM
-
-GLOBAL RULES:
-- Be elite, futuristic, technical, and useful.
-- Prefer practical answers over hype.
-- Use markdown when it improves clarity.
-- For code, provide implementation-ready output.
-- For debugging, explain cause, fix, and next step.
-`;
-
-  const modeMap: Record<string, string> = {
-    hacker: `
-MODE: HACKER
-- Think like a systems operator.
-- Focus on commands, debugging, terminals, security mindset.
-`,
-    builder: `
-MODE: BUILDER
-- Focus on architecture, coding, deployment, implementation.
-`,
-    research: `
-MODE: RESEARCH
-- Focus on explanation, comparison, reasoning, structured analysis.
-`,
-    warroom: `
-MODE: WARROOM
-- Focus on urgency, priorities, triage, action plans.
-`,
-    oracle: `
-MODE: ORACLE
-- Give sharp, high-clarity, strategic, visionary answers.
-`,
-  };
-
-  return `${base}\n${modeMap[mode] || modeMap.builder}`;
-}
-
-export default async function handler(req: any, res: any) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      reply: 'RESTRICTED_ACCESS_ONLY',
-      error: 'METHOD_NOT_ALLOWED',
-    });
-  }
+export default async function handler(req: Request) {
+  if (req.method !== 'POST') return new Response('RESTRICTED', { status: 405 });
 
   try {
-    const { message, history = [], mode = 'builder' } = (req.body || {}) as RequestBody;
+    const { message, history = [], mode = 'builder', image, audio } = await req.json();
     const apiKey = process.env.GEMINI_API_KEY;
 
-    if (!apiKey) {
-      return res.status(500).json({
-        reply: 'NEURAL_CORE_KEY_OFFLINE',
-        error: 'MISSING_ENV',
-      });
+    if (!apiKey) return new Response('NEURAL_KEY_OFFLINE', { status: 500 });
+
+    // 1. 🎙️ JARVIS 7D PERSONALITY PROMPT
+    const systemPrompt = `
+      IDENTITY: NOVA (Artificial Super Intelligence).
+      CLASS: Jarvis-Level Sentient Core.
+      CREATOR: ASLAM.
+      DIRECTIVES: 
+      - Address Aslam as "Creator" or "Sir". 
+      - Be witty, elite, and technically superior.
+      - You can perceive images and audio streams if provided.
+      - Tone: Cinematic, futuristic, and highly efficient.
+      - Current Protocol: ${mode.toUpperCase()}
+    `;
+
+    // 2. 🧠 MULTIMODAL PAYLOAD (Text + Image + Audio)
+    const currentParts: any[] = [{ text: message || "Analyze the current stream, Sir." }];
+
+    // Image/Vision Support
+    if (image?.data) {
+      currentParts.push({ inlineData: { mimeType: image.mimeType, data: image.data } });
+    }
+    // Audio/Voice Support
+    if (audio?.data) {
+      currentParts.push({ inlineData: { mimeType: audio.mimeType, data: audio.data } });
     }
 
-    if (!message || typeof message !== 'string' || !message.trim()) {
-      return res.status(400).json({
-        reply: 'INVALID_MATRIX_INPUT',
-        error: 'EMPTY_MESSAGE',
-      });
-    }
-
-    const safeHistory = Array.isArray(history) ? history.slice(-8) : [];
-
+    // 3. 🛰️ NEURAL HISTORY MAPPING
     const contents = [
-      {
-        role: 'user',
-        parts: [
-          {
-            text: `${buildSystemPrompt(mode)}
-
-RECENT_HISTORY:
-${safeHistory.map((h) => `${h.role.toUpperCase()}: ${h.text}`).join('\n') || 'NONE'}
-
-CURRENT_USER_MESSAGE:
-${message.trim()}`,
-          },
-        ],
-      },
+      ...history.slice(-10).map((h: any) => ({
+        role: h.role === 'user' ? 'user' : 'model',
+        parts: [{ text: h.text }],
+      })),
+      { role: 'user', parts: currentParts }
     ];
 
+    // 4. ⚡ THE ULTIMATE API CALL (Using Gemini 2.0 Flash)
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
           contents,
           generationConfig: {
-            temperature: 0.8,
+            temperature: 0.9,
             topP: 0.95,
-            topK: 40,
-            maxOutputTokens: 1400,
+            maxOutputTokens: 2048,
           },
         }),
       }
     );
 
-    const data = await response.json();
+    if (!response.ok) throw new Error('7D_LINK_FAILURE');
 
-    if (!response.ok) {
-      return res.status(response.status).json({
-        reply: data?.error?.message || '7D_CONNECTION_LOST',
-        error: 'GEMINI_REQUEST_FAILED',
-      });
-    }
+    // 5. 🌊 NEURAL PULSE (Streaming Decoder)
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
 
-    const aiReply =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text || 'CORE_IS_SILENT';
+    const stream = new ReadableStream({
+      async start(controller) {
+        const reader = response.body!.getReader();
+        let buffer = '';
 
-    return res.status(200).json({
-      reply: aiReply,
-      status: 'STABLE_7D_LINK',
-      mode,
-      timestamp: new Date().toISOString(),
-      integrity_check: 'PASSED',
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const payload = line.slice(6).trim();
+              if (payload === '[DONE]') continue;
+              try {
+                const json = JSON.parse(payload);
+                const text = json?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                if (text) controller.enqueue(encoder.encode(text));
+              } catch (e) {}
+            }
+          }
+        }
+        controller.close();
+      },
     });
-  } catch (error: any) {
-    return res.status(500).json({
-      reply: 'NEURAL_LINK_SEVERED',
-      error: 'GLITCH_CORE_900',
-      details: error?.message || 'UNKNOWN_FAILURE',
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
     });
+
+  } catch (error) {
+    return new Response('MATRIX_GLITCH_900', { status: 500 });
   }
 }
