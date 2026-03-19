@@ -143,6 +143,7 @@ export default async function handler(req: Request) {
           temperature: 0.9,
           topP: 0.95,
           maxOutputTokens: 2048,
+          mediaResolution: 'MEDIA_RESOLUTION_UNSPECIFIED',
         },
       }),
     });

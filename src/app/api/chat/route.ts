@@ -54,6 +54,7 @@ export async function POST(req: Request) {
           generationConfig: {
             temperature: 0.8,
             maxOutputTokens: 2048,
+            mediaResolution: 'MEDIA_RESOLUTION_UNSPECIFIED',
           },
         }),
       }
