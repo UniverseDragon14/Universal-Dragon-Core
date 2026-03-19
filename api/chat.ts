@@ -3,12 +3,19 @@
 // NOVA v15.0 [OMNIPOTENT AGI CORE - FINAL]
 // ==========================================
 // force redeploy
-'X-NOVA-VERSION': '15.0-OMNIPOTENT-v2',
 export const config = {
   runtime: 'edge',
 };
 
 const GEMINI_MODEL = 'gemini-1.5-pro';
+
+// MediaResolution enum values for Gemini API
+const MediaResolution = {
+  MEDIA_RESOLUTION_UNSPECIFIED: 'MEDIA_RESOLUTION_UNSPECIFIED',
+  MEDIA_RESOLUTION_LOW: 'MEDIA_RESOLUTION_LOW',
+  MEDIA_RESOLUTION_MEDIUM: 'MEDIA_RESOLUTION_MEDIUM',
+  MEDIA_RESOLUTION_HIGH: 'MEDIA_RESOLUTION_HIGH',
+} as const;
 
 type ChatHistoryItem = {
   role: 'user' | 'assistant' | 'model';
@@ -143,6 +150,7 @@ export default async function handler(req: Request) {
           temperature: 0.9,
           topP: 0.95,
           maxOutputTokens: 2048,
+          mediaResolution: MediaResolution.MEDIA_RESOLUTION_UNSPECIFIED,
         },
       }),
     });

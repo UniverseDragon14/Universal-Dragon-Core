@@ -221,7 +221,7 @@ export default function App() {
                 />
                 <button onClick={sendMessage} className="px-8 py-2 font-black text-xs transition-transform active:scale-95" style={{ backgroundColor: modeColor, color: '#000' }}>EXECUTE</button>
               </div>
-              {image && <div className="text-[10px] mt-2 opacity-70 italic text-pink-500 animate-pulse">>> VISUAL_PAYLOAD_READY // {image.mime_type}</div>}
+              {image && <div className="text-[10px] mt-2 opacity-70 italic text-pink-500 animate-pulse">{'>> VISUAL_PAYLOAD_READY // '}{image.mime_type}</div>}
             </div>
           </div>
         </div>
