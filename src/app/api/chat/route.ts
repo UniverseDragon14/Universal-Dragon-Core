@@ -1,5 +1,13 @@
 export const runtime = 'edge';
 
+// MediaResolution enum values for Gemini API
+const MediaResolution = {
+  MEDIA_RESOLUTION_UNSPECIFIED: 'MEDIA_RESOLUTION_UNSPECIFIED',
+  MEDIA_RESOLUTION_LOW: 'MEDIA_RESOLUTION_LOW',
+  MEDIA_RESOLUTION_MEDIUM: 'MEDIA_RESOLUTION_MEDIUM',
+  MEDIA_RESOLUTION_HIGH: 'MEDIA_RESOLUTION_HIGH',
+} as const;
+
 function headers() {
   return {
     'Content-Type': 'text/plain; charset=utf-8',
@@ -54,6 +62,7 @@ export async function POST(req: Request) {
           generationConfig: {
             temperature: 0.8,
             maxOutputTokens: 2048,
+            mediaResolution: MediaResolution.MEDIA_RESOLUTION_UNSPECIFIED,
           },
         }),
       }
