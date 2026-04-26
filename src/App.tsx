@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Header } from './components/Header';
 import { TelemetryPanel } from './components/TelemetryPanel';
 import { SpatialMap } from './components/SpatialMap';
@@ -160,6 +161,7 @@ export default function App() {
         <div className="text-[8px] font-mono tracking-[0.2em]">UNIVERSAL_DRAGON_GRID_V7.0_STABLE</div>
         <div className="text-[8px] font-mono tracking-[0.2em]">MASTER_ASLAM_REAL_CREATOR</div>
       </footer>
+      <SpeedInsights />
     </div>
   );
 }
