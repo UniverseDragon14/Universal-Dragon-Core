@@ -1,20 +1,24 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Universal Dragon Aslam
 
-# Run and deploy your AI Studio app
+Universal Dragon is a real-world AI, robotics, automation, Raspberry Pi, and system design project by Aslam.
 
-This contains everything you need to run your app locally.
+Creator: Aslam  
+Project Identity: Universal Dragon  
+GitHub: https://github.com/UniverseDragon14  
+Website: https://universedragon14.github.io/
 
-View your app in AI Studio: https://ai.studio/apps/4c482296-31ca-4951-95e0-264eb16908c5
+## Universal Dragon Core
+
+This repository is part of the Universal Dragon public project family. It supports the long-term Universal Dragon / NOVA / EVE system direction.
+
+Keywords: Universal Dragon, Universal Dragon Aslam, Aslam, NOVA, EVE, UDOS, AI, robotics, automation, Raspberry Pi, system design.
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:** Node.js
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Set the `GEMINI_API_KEY` in `.env.local` to your Gemini API key
 3. Run the app:
    `npm run dev`
