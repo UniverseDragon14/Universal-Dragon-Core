@@ -3,14 +3,20 @@
 Universal Dragon / NOVA Project Analyzer
 
 Safe architecture review tool for Universal Dragon project folders.
-- No API key is stored in this file.
-- Reads selected public/source files only.
-- Skips secrets, env files, virtualenvs, node_modules, git folders, logs, and large binaries.
-- Writes a local Markdown report.
+Supports:
+- Groq OpenAI-compatible API with openai/gpt-oss-120b
+- OpenAI API as optional fallback
 
-Usage:
-  export OPENAI_API_KEY="your_api_key_here"
-  export OPENAI_MODEL="gpt-5.5"   # Change if your Platform account uses another model name
+Recommended Groq usage:
+  export AI_PROVIDER="groq"
+  export GROQ_API_KEY="your_groq_api_key_here"
+  export GROQ_MODEL="openai/gpt-oss-120b"
+  python tools/analyze_universal_dragon.py /path/to/project
+
+Optional OpenAI usage:
+  export AI_PROVIDER="openai"
+  export OPENAI_API_KEY="your_openai_api_key_here"
+  export OPENAI_MODEL="gpt-5.5"
   python tools/analyze_universal_dragon.py /path/to/project
 """
 
@@ -26,12 +32,15 @@ from typing import Iterable
 try:
     from openai import OpenAI
 except ImportError as exc:
-    raise SystemExit(
-        "OpenAI Python package not installed. Run: pip install openai"
-    ) from exc
+    raise SystemExit("OpenAI Python package not installed. Run: pip install openai") from exc
 
 
-DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.5")
+AI_PROVIDER = os.getenv("AI_PROVIDER", "groq").strip().lower()
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.5")
+DEFAULT_MODEL = GROQ_MODEL if AI_PROVIDER == "groq" else OPENAI_MODEL
+GROQ_BASE_URL = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+
 MAX_TOTAL_CHARS = int(os.getenv("UD_MAX_ANALYSIS_CHARS", "70000"))
 MAX_FILE_CHARS = int(os.getenv("UD_MAX_FILE_CHARS", "9000"))
 
@@ -52,10 +61,9 @@ SECRET_NAME_PARTS = {
 }
 
 SECRET_PATTERNS = [
-    # OpenAI / common API keys
-    (re.compile(r"sk-[A-Za-z0-9_\-]{20,}"), "sk-***REDACTED***"),
     (re.compile(r"sk-proj-[A-Za-z0-9_\-]{20,}"), "sk-proj-***REDACTED***"),
-    # Generic assignment style secrets
+    (re.compile(r"sk-[A-Za-z0-9_\-]{20,}"), "sk-***REDACTED***"),
+    (re.compile(r"gsk_[A-Za-z0-9_\-]{20,}"), "gsk_***REDACTED***"),
     (re.compile(r"(?i)(api[_-]?key|secret|token|password)\s*[:=]\s*['\"]?[^'\"\n\s]+"), r"\1=***REDACTED***"),
 ]
 
@@ -75,7 +83,6 @@ def should_skip_path(path: Path, root: Path) -> bool:
 
     name = path.name.lower()
     if any(secret in name for secret in SECRET_NAME_PARTS):
-        # Allow .env.example because it is normally a safe template.
         if name == ".env.example" or name.endswith(".env.example"):
             return False
         return True
@@ -112,8 +119,7 @@ def read_project_files(root: Path) -> list[FileChunk]:
         if len(raw) > MAX_FILE_CHARS:
             raw = raw[:MAX_FILE_CHARS] + "\n\n[TRUNCATED: file too large]\n"
 
-        part = FileChunk(path=path.relative_to(root), content=raw)
-        chunks.append(part)
+        chunks.append(FileChunk(path=path.relative_to(root), content=raw))
         total += len(raw)
 
         if total >= MAX_TOTAL_CHARS:
@@ -131,6 +137,8 @@ def build_prompt(root: Path, chunks: Iterable[FileChunk]) -> str:
 You are NOVA, the Universal Dragon architecture reviewer.
 
 Project root: {root}
+AI provider: {AI_PROVIDER}
+Model: {DEFAULT_MODEL}
 
 Review these project files safely. Focus on practical engineering only.
 
@@ -161,56 +169,73 @@ def extract_text(response: object) -> str:
     output_text = getattr(response, "output_text", None)
     if output_text:
         return str(output_text)
-
-    # Fallback for older SDK response shapes.
     try:
         choices = getattr(response, "choices")
-        return choices[0].message.content
+        return choices[0].message.content or ""
     except Exception:
         return str(response)
+
+
+def call_groq(prompt: str) -> str:
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise SystemExit(
+            "GROQ_API_KEY is missing. Set it first:\n"
+            "  export GROQ_API_KEY=\"your_groq_api_key_here\""
+        )
+
+    client = OpenAI(api_key=api_key, base_url=GROQ_BASE_URL)
+    response = client.chat.completions.create(
+        model=GROQ_MODEL,
+        messages=[
+            {"role": "system", "content": "You are NOVA, a safe Universal Dragon project architecture reviewer."},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.2,
+    )
+    return extract_text(response)
 
 
 def call_openai(prompt: str) -> str:
     if not os.getenv("OPENAI_API_KEY"):
         raise SystemExit(
             "OPENAI_API_KEY is missing. Set it first:\n"
-            "  export OPENAI_API_KEY=\"your_api_key_here\""
+            "  export OPENAI_API_KEY=\"your_openai_api_key_here\""
         )
 
     client = OpenAI()
-
-    # Newer OpenAI SDK path: Responses API.
     if hasattr(client, "responses"):
         response = client.responses.create(
-            model=DEFAULT_MODEL,
+            model=OPENAI_MODEL,
             input=[
-                {
-                    "role": "system",
-                    "content": "You are NOVA, a safe Universal Dragon project architecture reviewer."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
+                {"role": "system", "content": "You are NOVA, a safe Universal Dragon project architecture reviewer."},
+                {"role": "user", "content": prompt},
             ],
         )
         return extract_text(response)
 
-    # Compatibility fallback for older SDK versions.
     response = client.chat.completions.create(
-        model=DEFAULT_MODEL,
+        model=OPENAI_MODEL,
         messages=[
-            {
-                "role": "system",
-                "content": "You are NOVA, a safe Universal Dragon project architecture reviewer."
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
+            {"role": "system", "content": "You are NOVA, a safe Universal Dragon project architecture reviewer."},
+            {"role": "user", "content": prompt},
         ],
+        temperature=0.2,
     )
     return extract_text(response)
+
+
+def call_ai(prompt: str) -> str:
+    if AI_PROVIDER == "groq":
+        return call_groq(prompt)
+    if AI_PROVIDER == "openai":
+        return call_openai(prompt)
+    raise SystemExit(
+        f"Unsupported AI_PROVIDER: {AI_PROVIDER}\n"
+        "Use one of:\n"
+        "  export AI_PROVIDER=\"groq\"\n"
+        "  export AI_PROVIDER=\"openai\""
+    )
 
 
 def main() -> None:
@@ -218,8 +243,9 @@ def main() -> None:
     if not root.exists() or not root.is_dir():
         raise SystemExit(f"Project folder not found: {root}")
 
-    print(f"🐉 Universal Dragon analyzer")
+    print("🐉 Universal Dragon analyzer")
     print(f"📁 Project: {root}")
+    print(f"🔌 Provider: {AI_PROVIDER}")
     print(f"🧠 Model: {DEFAULT_MODEL}")
     print("🔎 Reading safe source files...")
 
@@ -232,13 +258,14 @@ def main() -> None:
 
     print("🚀 Sending architecture review request...")
     try:
-        report = call_openai(prompt)
+        report = call_ai(prompt)
     except Exception as exc:
         message = str(exc)
         if "model" in message.lower() and ("not" in message.lower() or "found" in message.lower()):
             message += (
-                "\n\nModel access problem. Try setting a model your OpenAI Platform account supports:\n"
-                "  export OPENAI_MODEL=\"your_available_model_name\""
+                "\n\nModel access problem. Try setting a model your provider supports:\n"
+                "  export GROQ_MODEL=\"openai/gpt-oss-120b\"\n"
+                "  export OPENAI_MODEL=\"your_available_openai_model_name\""
             )
         raise SystemExit(message) from exc
 
