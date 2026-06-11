@@ -2,10 +2,11 @@ Package: nova
 Version: 1.3.5~dev2
 Architecture: all
 Maintainer: Aslam <univercialdragon@gmail.com>
-Filename: nova-lang/packages/nova_1.3.5_dev2_all.deb
+Filename: nova_1.3.5_dev2_all.deb
 Size: 7332
 MD5sum: 206adb91869c8b7ed97775b65d70b3fc
 SHA256: ed94fd76ad25da31469cd12338037a54f8726d14fb107c98097adfc0b605c9b1
 Section: utils
 Priority: optional
+Depends: python, bash
 Description: Universal Dragon NOVA v1.3.5-dev2 portable multi-engine runtime for Termux.
