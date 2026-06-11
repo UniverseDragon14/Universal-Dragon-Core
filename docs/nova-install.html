@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Universal Dragon NOVA Install</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: radial-gradient(circle at top, #103b1e 0%, #050805 45%, #020302 100%);
+      color: #f3fff3;
+    }
+    header {
+      padding: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(54,255,92,.25);
+      position: sticky;
+      top: 0;
+      background: rgba(2,5,3,.85);
+      backdrop-filter: blur(12px);
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+    .logo span { color: #39ff5a; }
+    .btn {
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: #39ff5a;
+      color: #021002;
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 0 25px rgba(57,255,90,.35);
+    }
+    main {
+      max-width: 1050px;
+      margin: auto;
+      padding: 55px 20px;
+    }
+    .tag {
+      display: inline-block;
+      padding: 10px 16px;
+      border: 1px solid #39ff5a;
+      color: #9dffae;
+      border-radius: 12px;
+      letter-spacing: 3px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    h1 {
+      font-size: clamp(46px, 9vw, 92px);
+      line-height: .95;
+      margin: 28px 0 20px;
+    }
+    h1 span { color: #39ff5a; }
+    p {
+      color: #b8c8b8;
+      font-size: 20px;
+      line-height: 1.6;
+      max-width: 780px;
+    }
+    .terminal {
+      margin-top: 35px;
+      background: #071007;
+      border: 1px solid rgba(57,255,90,.4);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 0 45px rgba(57,255,90,.15);
+    }
+    .bar {
+      padding: 14px 18px;
+      background: #101a10;
+      color: #8dff9d;
+      font-weight: 800;
+      letter-spacing: 2px;
+      border-bottom: 1px solid rgba(57,255,90,.25);
+    }
+    pre {
+      margin: 0;
+      padding: 22px;
+      overflow-x: auto;
+      font-size: 15px;
+      line-height: 1.55;
+      color: #eaffea;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-top: 35px;
+    }
+    .card {
+      border: 1px solid rgba(57,255,90,.25);
+      background: rgba(5,18,7,.65);
+      border-radius: 18px;
+      padding: 20px;
+    }
+    .card h3 {
+      margin-top: 0;
+      color: #39ff5a;
+    }
+    footer {
+      text-align: center;
+      color: #7f987f;
+      padding: 35px 20px;
+      border-top: 1px solid rgba(57,255,90,.18);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">UNIVERSAL DRAGON <span>NOVA</span></div>
+    <a class="btn" href="#install">Install</a>
+  </header>
+
+  <main>
+    <div class="tag">TERMUX • QBIT • MULTI ENGINE</div>
+
+    <h1>Install <span>NOVA</span><br>in under 1 minute.</h1>
+
+    <p>
+      Universal Dragon NOVA is a portable multi-engine tool-language runtime for Termux.
+      It routes nova-core, qbit, python, bash, node, sqlite, C, C++, Rust, and Java from one command face.
+    </p>
+
+    <section class="terminal" id="install">
+      <div class="bar">ONE COMMAND INSTALL</div>
+      <pre>pkg install curl -y
+curl -L https://raw.githubusercontent.com/UniverseDragon14/Universal-Dragon-Core/nova-v1.3.5-dev/install-repo.sh | bash
+
+pkg install nova
+nova version
+nova doctor</pre>
+    </section>
+
+    <div class="grid">
+      <div class="card">
+        <h3>✅ Portable Package</h3>
+        <p>Works through Termux package manager after NOVA repo is added.</p>
+      </div>
+      <div class="card">
+        <h3>⚛ QBIT Engine</h3>
+        <p>Run symbolic qbit commands using <b>nova run</b> or <b>nova qbit</b>.</p>
+      </div>
+      <div class="card">
+        <h3>🧠 Multi Engine</h3>
+        <p>Python, Bash, Node.js, SQLite, C, C++, Rust, and Java adapter status.</p>
+      </div>
+      <div class="card">
+        <h3>🐉 Mobile Field Lab</h3>
+        <p>Built from Termux, tested with fresh HOME simulation, doctor GREEN.</p>
+      </div>
+    </div>
+
+    <section class="terminal">
+      <div class="bar">QBIT TEST OUTPUT</div>
+      <pre>nova run "$PREFIX/share/nova/examples/qbit_test.qnova"
+
+qbit dragon = |0&gt;
+dragon: |0&gt;=1.000+0.000j |1&gt;=0.000+0.000j
+h dragon
+dragon: |0&gt;=0.707+0.000j |1&gt;=0.707+0.000j
+measure dragon =&gt; 0
+dragon: |0&gt;=1.000+0.000j |1&gt;=0.000+0.000j</pre>
+    </section>
+  </main>
+
+  <footer>
+    Universal Dragon NOVA • Built by Aslam • Termux Portable Public Package
+  </footer>
+</body>
+</html>
