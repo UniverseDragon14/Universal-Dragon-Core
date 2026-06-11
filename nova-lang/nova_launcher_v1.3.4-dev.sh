@@ -82,10 +82,22 @@ doctor_combined_v134(){
   fi
 }
 
+show_version_v134(){
+  echo "NOVA v1.3.4-dev"
+  echo "Identity : Universal Dragon NOVA"
+  echo "Runtime  : Multi-Engine Tool-Language Runtime"
+  echo "Engines  : nova-core, qbit, python, bash, node, sqlite, C, C++, Rust, Java"
+  echo "Mode     : Termux Mobile Field Lab"
+}
+
 case "$1" in
   router|router-version)
     echo "NOVA Launcher Router v1.3.4-dev"
     echo "Routes: adapter, py, qbit, run, notes, help"
+    ;;
+
+  version)
+    show_version_v134
     ;;
 
   doctor)
