@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://install.universaldragon.com/sitemap.xml
