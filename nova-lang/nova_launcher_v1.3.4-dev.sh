@@ -68,10 +68,29 @@ show_help_v134(){
   echo "  nova py 'print(123)'"
 }
 
+doctor_combined_v134(){
+  ROOT="$HOME/nova-lang"
+  CORE="$ROOT/nova.py"
+  echo "NOVA DOCTOR + ADAPTER v1.3.4-dev"
+  echo
+  python "$CORE" doctor
+  echo
+  if [ -x "$ROOT/adapters/adapter_check.sh" ]; then
+    "$ROOT/adapters/adapter_check.sh"
+  else
+    echo "Adapter checker missing: $ROOT/adapters/adapter_check.sh"
+  fi
+}
+
 case "$1" in
   router|router-version)
     echo "NOVA Launcher Router v1.3.4-dev"
     echo "Routes: adapter, py, qbit, run, notes, help"
+    ;;
+
+  doctor)
+    shift
+    doctor_combined_v134 "$@"
     ;;
 
   adapter)
