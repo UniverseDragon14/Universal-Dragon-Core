@@ -1,11 +1,12 @@
 Package: nova
-Version: 1.3.3
+Version: 1.3.4~dev1
 Architecture: all
 Maintainer: Aslam <univercialdragon@gmail.com>
-Filename: nova_1.3.3_all.deb
-Size: 1492
-MD5sum: 7b657776321871de673997b852256cc3
-SHA256: 468ea19fc3b6b6e9375a0f5eda9e49c85800abc52f84557ffa1e82c304ef783c
+Filename: nova_1.3.4_dev1_all.deb
+Size: 1960
+MD5sum: 541047d6fc3b07ce87e86b713ce5a048
+SHA256: c65f67195478c70c1ce8188d759a9a4d8e44589ad60071a5e80756c7d0f5d1af
 Section: utils
 Priority: optional
-Description: Universal Dragon NOVA v1.3.3 launcher router with universal runner for qbit, python, node, bash, sqlite, and nova core.
+Description: Universal Dragon NOVA v1.3.4-dev1 multi-engine tool-language runtime.
+ Includes launcher router, notes, doctor, adapter report, qbit, python, bash, node, sqlite, C, C++, Rust, Java routing.
