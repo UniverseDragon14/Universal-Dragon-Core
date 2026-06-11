@@ -112,12 +112,77 @@
       border-top: 1px solid rgba(57,255,90,.18);
     }
   </style>
+
+<!-- NOVA mobile copy polish v1 -->
+<style id="nova-mobile-copy-polish-v1">
+  pre, code {
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .nova-copy-panel {
+    margin: 18px 0;
+    border: 1px solid rgba(57,255,90,.55);
+    border-radius: 22px;
+    background: rgba(0,0,0,.38);
+    overflow: hidden;
+  }
+
+  .nova-copy-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(57,255,90,.35);
+  }
+
+  .nova-copy-title {
+    color: #93ff9f;
+    font-weight: 800;
+    letter-spacing: .12em;
+    font-size: 13px;
+  }
+
+  .nova-copy-btn {
+    border: 0;
+    border-radius: 999px;
+    padding: 10px 14px;
+    background: #39ff5a;
+    color: #041307;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .nova-copy-code {
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.65;
+    max-width: 100%;
+  }
+</style>
+
 </head>
 <body>
   <header>
     <div class="logo">UNIVERSAL DRAGON <span>NOVA</span></div>
     <a class="btn" href="#install">Install</a>
   </header>
+
+<section class="nova-copy-panel" id="nova-copy-panel">
+  <div class="nova-copy-head">
+    <div class="nova-copy-title">COPY INSTALL COMMAND</div>
+    <button class="nova-copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('nova-install-cmd').innerText).then(()=>this.innerText='Copied ✅')">Copy</button>
+  </div>
+  <pre class="nova-copy-code" id="nova-install-cmd">pkg install curl -y
+curl -L https://raw.githubusercontent.com/UniverseDragon14/Universal-Dragon-Core/nova-v1.3.5-dev/install-repo.sh | bash
+
+pkg install nova
+nova version
+nova doctor</pre>
+</section>
+
 
   <main>
     <div class="tag">TERMUX • QBIT • MULTI ENGINE</div>
