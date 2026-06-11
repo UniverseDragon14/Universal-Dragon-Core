@@ -70,8 +70,8 @@ show_help_v134(){
 
 case "$1" in
   router|router-version)
-    echo "NOVA Launcher Router v1.3.3"
-    echo "Routes: adapter, py, qbit, run"
+    echo "NOVA Launcher Router v1.3.4-dev"
+    echo "Routes: adapter, py, qbit, run, notes, help"
     ;;
 
   adapter)
