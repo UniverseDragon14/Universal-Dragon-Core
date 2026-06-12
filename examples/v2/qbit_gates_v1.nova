@@ -1,0 +1,25 @@
+brain universal_dragon
+
+say "QBIT gates test started"
+
+qbit dragon = |0>
+state dragon
+prob dragon
+
+h dragon
+state dragon
+prob dragon
+
+x dragon
+state dragon
+prob dragon
+
+z dragon
+state dragon
+prob dragon
+
+reset dragon
+state dragon
+prob dragon
+
+measure dragon
