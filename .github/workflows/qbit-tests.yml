@@ -26,3 +26,7 @@ jobs:
 
       - name: Run Bell repeat stability test
         run: python3 tests/qbit_bell_repeat_check.py
+
+      - name: Run quantum-first syntax parser test
+        run: python3 nova-lang/v2/nova2_quantum_syntax.py examples/v2/quantum_first_syntax_test.nova
+
