@@ -1,0 +1,28 @@
+name: NOVA QBIT Tests
+
+on:
+  push:
+    branches:
+      - nova-v1.3.5-dev
+  pull_request:
+    branches:
+      - nova-v1.3.5-dev
+
+jobs:
+  qbit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run Bell CNOT single test
+        run: python3 nova-lang/v2/nova2_run.py examples/v2/qbit_bell_cnot_test.nova
+
+      - name: Run Bell repeat stability test
+        run: python3 tests/qbit_bell_repeat_check.py
