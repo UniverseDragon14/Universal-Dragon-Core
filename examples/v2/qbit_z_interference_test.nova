@@ -1,0 +1,21 @@
+brain universal_dragon
+
+say "Z interference test"
+
+qbit dragon = |0>
+state dragon
+prob dragon
+
+h dragon
+state dragon
+prob dragon
+
+z dragon
+state dragon
+prob dragon
+
+h dragon
+state dragon
+prob dragon
+
+measure dragon
