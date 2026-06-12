@@ -7,57 +7,163 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from nova2_seed import lex, Parser
 
-class QBit:
-    def __init__(self, state="|0>"):
-        self.set_state(state)
+def cfmt(z):
+    return f"{z.real:.3f}{z.imag:+.3f}j"
 
-    def set_state(self, state):
-        if state == "|1>":
-            self.a = 0+0j
-            self.b = 1+0j
-        else:
-            self.a = 1+0j
-            self.b = 0+0j
+class QuantumWorld:
+    def __init__(self):
+        self.names = []
+        self.amps = [1+0j]
 
-    def h(self):
-        a, b = self.a, self.b
+    def add_qbit(self, name, state="|0>"):
+        if name in self.names:
+            raise RuntimeError(f"Qbit already exists: {name}")
+
+        old = self.amps
+        new = []
+
+        for amp in old:
+            if state == "|1>":
+                new.extend([0+0j, amp])
+            else:
+                new.extend([amp, 0+0j])
+
+        self.names.append(name)
+        self.amps = new
+
+    def q_index(self, name):
+        if name not in self.names:
+            raise RuntimeError(f"Unknown qbit: {name}")
+        return self.names.index(name)
+
+    def mask(self, name):
+        n = len(self.names)
+        i = self.q_index(name)
+        return 1 << (n - 1 - i)
+
+    def apply_gate(self, name, matrix):
+        mask = self.mask(name)
+        old = self.amps[:]
+        new = old[:]
+
+        a, b = matrix[0]
+        c, d = matrix[1]
+
+        for i in range(len(old)):
+            if i & mask:
+                continue
+
+            j = i | mask
+            v0 = old[i]
+            v1 = old[j]
+
+            new[i] = a * v0 + b * v1
+            new[j] = c * v0 + d * v1
+
+        self.amps = new
+
+    def h(self, name):
         s = math.sqrt(2)
-        self.a = (a + b) / s
-        self.b = (a - b) / s
+        self.apply_gate(name, [[1/s, 1/s], [1/s, -1/s]])
 
-    def x(self):
-        self.a, self.b = self.b, self.a
+    def x(self, name):
+        self.apply_gate(name, [[0, 1], [1, 0]])
 
-    def z(self):
-        self.b = -self.b
+    def z(self, name):
+        self.apply_gate(name, [[1, 0], [0, -1]])
 
-    def reset(self):
-        self.a = 1+0j
-        self.b = 0+0j
+    def cnot(self, control, target):
+        if control == target:
+            raise RuntimeError("CNOT control and target cannot be same")
 
-    def prob(self):
-        return abs(self.a) ** 2, abs(self.b) ** 2
+        cmask = self.mask(control)
+        tmask = self.mask(target)
+        new = self.amps[:]
 
-    def measure(self):
-        p0, _ = self.prob()
-        if random.random() < p0:
-            self.reset()
-            return "0"
-        self.a = 0+0j
-        self.b = 1+0j
-        return "1"
+        for i in range(len(self.amps)):
+            control_is_1 = bool(i & cmask)
+            target_is_0 = not bool(i & tmask)
 
-    def state_text(self):
-        return f"|0>={self.a:.3f} |1>={self.b:.3f}"
+            if control_is_1 and target_is_0:
+                j = i | tmask
+                new[i], new[j] = new[j], new[i]
 
-    def prob_text(self):
-        p0, p1 = self.prob()
+        self.amps = new
+
+    def prob(self, name):
+        mask = self.mask(name)
+        p0 = 0.0
+        p1 = 0.0
+
+        for i, amp in enumerate(self.amps):
+            if i & mask:
+                p1 += abs(amp) ** 2
+            else:
+                p0 += abs(amp) ** 2
+
+        return p0, p1
+
+    def reset(self, name):
+        mask = self.mask(name)
+        new = [0+0j for _ in self.amps]
+
+        for i in range(len(self.amps)):
+            if i & mask:
+                continue
+
+            j = i | mask
+            p = abs(self.amps[i]) ** 2 + abs(self.amps[j]) ** 2
+            new[i] = math.sqrt(p) + 0j
+
+        self.amps = new
+
+    def measure(self, name):
+        mask = self.mask(name)
+        p0, p1 = self.prob(name)
+
+        result = "0" if random.random() < p0 else "1"
+        keep_bit = 0 if result == "0" else mask
+
+        new = []
+        norm = math.sqrt(p0 if result == "0" else p1)
+
+        for i, amp in enumerate(self.amps):
+            if (i & mask) == keep_bit and norm > 0:
+                new.append(amp / norm)
+            else:
+                new.append(0+0j)
+
+        self.amps = new
+        return result
+
+    def single_state_text(self, name):
+        if len(self.names) == 1:
+            return f"|0>={cfmt(self.amps[0])} |1>={cfmt(self.amps[1])}"
+
+        p0, p1 = self.prob(name)
+        return f"{name}: P(0)={p0:.3f} P(1)={p1:.3f}"
+
+    def prob_text(self, name):
+        p0, p1 = self.prob(name)
         return f"P(0)={p0:.3f} P(1)={p1:.3f}"
+
+    def register_text(self):
+        n = len(self.names)
+        if n == 0:
+            return "empty"
+
+        out = []
+        for i, amp in enumerate(self.amps):
+            if abs(amp) > 1e-9:
+                bits = format(i, f"0{n}b")
+                out.append(f"|{bits}>={cfmt(amp)}")
+
+        return " ".join(out) if out else "zero"
 
 class NovaRuntime:
     def __init__(self):
         self.vars = {}
-        self.qbits = {}
+        self.qworld = QuantumWorld()
         self.brain = None
 
     def eval_value(self, raw):
@@ -77,13 +183,8 @@ class NovaRuntime:
         except ValueError:
             return raw
 
-    def get_qbit(self, name):
-        if name not in self.qbits:
-            raise RuntimeError(f"Unknown qbit: {name}")
-        return self.qbits[name]
-
     def run(self, ast):
-        print("NOVA v2 interpreter QBIT gates GREEN")
+        print("NOVA v2 interpreter CNOT entanglement GREEN")
 
         for node in ast["body"]:
             t = node["type"]
@@ -99,47 +200,58 @@ class NovaRuntime:
                 print(self.eval_value(node["value"]))
 
             elif t == "Qbit":
-                q = QBit(node["state"])
-                self.qbits[node["name"]] = q
-                print(f"qbit {node['name']} = {node['state']}")
-                print(f"{node['name']}: {q.state_text()}")
+                name = node["name"]
+                self.qworld.add_qbit(name, node["state"])
+                print(f"qbit {name} = {node['state']}")
+                print(f"register: {self.qworld.register_text()}")
 
-            elif t in {"H", "X", "Z", "STATE", "PROB", "RESET", "MEASURE"}:
+            elif t == "H":
                 name = node["target"]
-                q = self.get_qbit(name)
+                self.qworld.h(name)
+                print(f"h {name}")
+                print(f"register: {self.qworld.register_text()}")
 
-                if t == "H":
-                    q.h()
-                    print(f"h {name}")
-                    print(f"{name}: {q.state_text()}")
+            elif t == "X":
+                name = node["target"]
+                self.qworld.x(name)
+                print(f"x {name}")
+                print(f"register: {self.qworld.register_text()}")
 
-                elif t == "X":
-                    q.x()
-                    print(f"x {name}")
-                    print(f"{name}: {q.state_text()}")
+            elif t == "Z":
+                name = node["target"]
+                self.qworld.z(name)
+                print(f"z {name}")
+                print(f"register: {self.qworld.register_text()}")
 
-                elif t == "Z":
-                    q.z()
-                    print(f"z {name}")
-                    print(f"{name}: {q.state_text()}")
+            elif t == "CNOT":
+                control = node["control"]
+                target = node["target"]
+                self.qworld.cnot(control, target)
+                print(f"cnot {control} {target}")
+                print(f"register: {self.qworld.register_text()}")
 
-                elif t == "STATE":
-                    print(f"state {name}")
-                    print(f"{name}: {q.state_text()}")
+            elif t == "STATE":
+                name = node["target"]
+                print(f"state {name}")
+                print(self.qworld.single_state_text(name))
+                print(f"register: {self.qworld.register_text()}")
 
-                elif t == "PROB":
-                    print(f"prob {name}")
-                    print(f"{name}: {q.prob_text()}")
+            elif t == "PROB":
+                name = node["target"]
+                print(f"prob {name}")
+                print(f"{name}: {self.qworld.prob_text(name)}")
 
-                elif t == "RESET":
-                    q.reset()
-                    print(f"reset {name}")
-                    print(f"{name}: {q.state_text()}")
+            elif t == "RESET":
+                name = node["target"]
+                self.qworld.reset(name)
+                print(f"reset {name}")
+                print(f"register: {self.qworld.register_text()}")
 
-                elif t == "MEASURE":
-                    result = q.measure()
-                    print(f"measure {name} => {result}")
-                    print(f"{name}: {q.state_text()}")
+            elif t == "MEASURE":
+                name = node["target"]
+                result = self.qworld.measure(name)
+                print(f"measure {name} => {result}")
+                print(f"register: {self.qworld.register_text()}")
 
             elif t == "Backup":
                 print("backup requested [seed mode]")

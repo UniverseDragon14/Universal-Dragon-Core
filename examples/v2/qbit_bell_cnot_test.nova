@@ -1,0 +1,17 @@
+brain universal_dragon
+
+say "Bell CNOT entanglement test"
+
+qbit a = |0>
+qbit b = |0>
+
+h a
+cnot a b
+
+state a
+state b
+prob a
+prob b
+
+measure a
+measure b
