@@ -1,0 +1,11 @@
+brain universal_dragon
+
+let creator = "Aslam"
+let system = "NOVA"
+
+say "NOVA v2 language seed started"
+say creator
+
+qbit dragon = |0>
+h dragon
+measure dragon
