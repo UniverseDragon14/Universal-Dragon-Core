@@ -1,0 +1,13 @@
+brain universal_dragon
+
+say "X gate clear test"
+
+qbit dragon = |0>
+state dragon
+prob dragon
+
+x dragon
+state dragon
+prob dragon
+
+measure dragon
