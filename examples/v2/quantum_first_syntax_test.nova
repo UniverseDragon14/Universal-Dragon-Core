@@ -1,0 +1,22 @@
+brain universal_dragon
+
+intent "choose safest robot path"
+
+qbit route = |0>
+h route
+prob route
+
+simulate route {
+  when 0 => "left path safe"
+  when 1 => "right path unknown"
+}
+
+observe route
+
+guard {
+  when 1 => rollback
+}
+
+collapse route
+
+say "Decision path selected"
