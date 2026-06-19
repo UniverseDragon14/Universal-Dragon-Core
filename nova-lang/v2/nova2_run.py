@@ -259,6 +259,14 @@ class NovaRuntime:
                 print(f"reset {name}")
                 print(f"register: {self.qworld.register_text()}")
 
+            elif t == "OBSERVE":
+                name = node["target"]
+                result = self.qworld.measure(name)
+                self.vars[name] = result
+                self.vars[f"{name}_observed"] = result
+                print(f"observe {name} => {result}")
+                print(f"register: {self.qworld.register_text()}")
+
             elif t == "MEASURE":
                 name = node["target"]
                 result = self.qworld.measure(name)

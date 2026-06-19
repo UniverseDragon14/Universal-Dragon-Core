@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 KEYWORDS = {
     "brain", "intent", "when", "simulate", "let", "say", "fn", "return", "task", "backup",
-    "run", "if", "error", "rollback", "qbit", "h", "x", "z", "state", "prob", "reset", "measure", "cnot"
+    "run", "if", "error", "rollback", "qbit", "h", "x", "z", "state", "prob", "reset", "measure", "observe", "cnot"
 }
 
 TOKEN_RE = re.compile(
@@ -160,7 +160,7 @@ class Parser:
             target = self.expect(kind="ID").value
             return {"type": "CNOT", "control": control, "target": target}
 
-        if word in {"h", "x", "z", "state", "prob", "reset", "measure"}:
+        if word in {"h", "x", "z", "state", "prob", "reset", "measure", "observe"}:
             self.advance()
             name = self.expect(kind="ID").value
             return {"type": word.upper(), "target": name}
