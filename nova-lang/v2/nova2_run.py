@@ -267,6 +267,34 @@ class NovaRuntime:
                 print(f"observe {name} => {result}")
                 print(f"register: {self.qworld.register_text()}")
 
+            elif t == "Guard":
+                target = node["target"]
+                observed = self.vars.get(target, self.vars.get(f"{target}_observed"))
+
+                print(f"guard {target}")
+
+                if observed is None:
+                    print(f"guard {target}: no observed value")
+                    continue
+
+                matched = False
+
+                for case in node["cases"]:
+                    if str(case["value"]) == str(observed):
+                        matched = True
+                        action = case["action"]
+                        print(f"guard matched {target} == {observed}")
+
+                        if action == "rollback":
+                            print("rollback requested [guard safe mode]")
+                        elif action == "say":
+                            print(self.eval_value(case["message"]))
+                        else:
+                            print(f"guard action: {action}")
+
+                if not matched:
+                    print(f"guard {target}: no matching case for {observed}")
+
             elif t == "MEASURE":
                 name = node["target"]
                 result = self.qworld.measure(name)

@@ -1,0 +1,20 @@
+brain universal_dragon
+intent "test guard safety logic"
+
+qbit auth_state = |0>
+h auth_state
+
+simulate auth_state {
+  when 0 => "Owner matched"
+  when 1 => "Spoof risk"
+}
+
+prob auth_state
+observe auth_state
+
+guard auth_state {
+  when 1 => rollback
+  when 0 => say "Access allowed"
+}
+
+say "Guard system online"

@@ -5,7 +5,7 @@ import sys
 from dataclasses import dataclass
 
 KEYWORDS = {
-    "brain", "intent", "when", "simulate", "let", "say", "fn", "return", "task", "backup",
+    "brain", "intent", "when", "simulate", "guard", "let", "say", "fn", "return", "task", "backup",
     "run", "if", "error", "rollback", "qbit", "h", "x", "z", "state", "prob", "reset", "measure", "observe", "cnot"
 }
 
@@ -127,6 +127,50 @@ class Parser:
             self.expect(value="=")
             state = self.expect(kind="QSTATE").value
             return {"type": "Qbit", "name": name, "state": state}
+
+        if word == "guard":
+            self.advance()
+            target = self.expect(kind="ID").value
+            self.expect(value="{")
+            cases = []
+
+            while self.peek().value != "}":
+                while self.peek().kind == "NEWLINE":
+                    self.advance()
+
+                if self.peek().value == "}":
+                    break
+
+                self.expect(value="when")
+                case_value = self.advance().value
+                self.expect(value="=")
+                self.expect(value=">")
+
+                action = self.advance().value
+
+                if action == "say":
+                    message = self.expect(kind="STRING").value
+                    cases.append({
+                        "value": case_value,
+                        "action": "say",
+                        "message": message
+                    })
+                elif action == "rollback":
+                    cases.append({
+                        "value": case_value,
+                        "action": "rollback"
+                    })
+                else:
+                    cases.append({
+                        "value": case_value,
+                        "action": action
+                    })
+
+                while self.peek().kind == "NEWLINE":
+                    self.advance()
+
+            self.expect(value="}")
+            return {"type": "Guard", "target": target, "cases": cases}
 
         if word == "simulate":
             self.advance()
