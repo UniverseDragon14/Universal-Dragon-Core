@@ -5,7 +5,7 @@ import sys
 from dataclasses import dataclass
 
 KEYWORDS = {
-    "brain", "let", "say", "fn", "return", "task", "backup",
+    "brain", "intent", "let", "say", "fn", "return", "task", "backup",
     "run", "if", "error", "rollback", "qbit", "h", "x", "z", "state", "prob", "reset", "measure", "cnot"
 }
 
@@ -105,6 +105,11 @@ class Parser:
             self.advance()
             name = self.expect(kind="ID").value
             return {"type": "Brain", "name": name}
+
+        if word == "intent":
+            self.advance()
+            value = self.expect(kind="STRING").value
+            return {"type": "Intent", "value": value}
 
         if word == "let":
             self.advance()

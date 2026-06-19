@@ -165,6 +165,7 @@ class NovaRuntime:
         self.vars = {}
         self.qworld = QuantumWorld()
         self.brain = None
+        self.intent = None
 
     def eval_value(self, raw):
         raw = raw.strip()
@@ -192,6 +193,10 @@ class NovaRuntime:
             if t == "Brain":
                 self.brain = node["name"]
                 print(f"brain {self.brain} online")
+
+            elif t == "Intent":
+                self.intent = self.eval_value(node["value"])
+                print(f"intent locked: {self.intent}")
 
             elif t == "Let":
                 self.vars[node["name"]] = self.eval_value(node["value"])
