@@ -210,6 +210,13 @@ class NovaRuntime:
                 print(f"qbit {name} = {node['state']}")
                 print(f"register: {self.qworld.register_text()}")
 
+            elif t == "Simulate":
+                target = node["target"]
+                print(f"simulate {target}")
+                for case in node["cases"]:
+                    result = self.eval_value(case["result"])
+                    print(f"when {case['value']} => {result}")
+
             elif t == "H":
                 name = node["target"]
                 self.qworld.h(name)

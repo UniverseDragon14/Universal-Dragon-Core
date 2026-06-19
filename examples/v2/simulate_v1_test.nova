@@ -1,0 +1,13 @@
+brain universal_dragon
+intent "test simulate block"
+
+qbit auth_state = |0>
+h auth_state
+
+simulate auth_state {
+  when 0 => "Owner matched"
+  when 1 => "Spoof risk"
+}
+
+prob auth_state
+say "Simulate block online"

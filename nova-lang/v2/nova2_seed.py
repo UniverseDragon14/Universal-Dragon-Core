@@ -5,7 +5,7 @@ import sys
 from dataclasses import dataclass
 
 KEYWORDS = {
-    "brain", "intent", "let", "say", "fn", "return", "task", "backup",
+    "brain", "intent", "when", "simulate", "let", "say", "fn", "return", "task", "backup",
     "run", "if", "error", "rollback", "qbit", "h", "x", "z", "state", "prob", "reset", "measure", "cnot"
 }
 
@@ -14,7 +14,7 @@ TOKEN_RE = re.compile(
     r"|(?P<STRING>\"[^\"\\]*(?:\\.[^\"\\]*)*\")"
     r"|(?P<NUMBER>\d+(?:\.\d+)?)"
     r"|(?P<ID>[A-Za-z_][A-Za-z0-9_]*)"
-    r"|(?P<SYMBOL>[{}()=,+\-*/])"
+    r"|(?P<SYMBOL>[{}()=,+\-*/>])"
     r"|(?P<SPACE>[ \t]+)"
     r"|(?P<MISMATCH>.)"
 )
@@ -127,6 +127,32 @@ class Parser:
             self.expect(value="=")
             state = self.expect(kind="QSTATE").value
             return {"type": "Qbit", "name": name, "state": state}
+
+        if word == "simulate":
+            self.advance()
+            target = self.expect(kind="ID").value
+            self.expect(value="{")
+            cases = []
+
+            while self.peek().value != "}":
+                while self.peek().kind == "NEWLINE":
+                    self.advance()
+
+                if self.peek().value == "}":
+                    break
+
+                self.expect(value="when")
+                case_value = self.advance().value
+                self.expect(value="=")
+                self.expect(value=">")
+                result = self.expect(kind="STRING").value
+                cases.append({"value": case_value, "result": result})
+
+                while self.peek().kind == "NEWLINE":
+                    self.advance()
+
+            self.expect(value="}")
+            return {"type": "Simulate", "target": target, "cases": cases}
 
         if word == "cnot":
             self.advance()
