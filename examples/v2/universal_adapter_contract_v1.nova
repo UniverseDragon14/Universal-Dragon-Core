@@ -1,0 +1,34 @@
+brain universal_dragon
+intent "produce universal adapter contract for safe external execution"
+
+qbit adapter_mode = |0>
+
+simulate adapter_mode {
+  when 0 => "safe external adapter action allowed"
+  when 1 => "dangerous runtime action blocked"
+}
+
+prob adapter_mode
+observe adapter_mode
+
+guard adapter_mode {
+  when 0 => say "NODE_CONTRACT:UNIVERSAL_ADAPTER"
+  when 0 => say "NODE_CHANNEL:ANY_SAFE_ADAPTER"
+  when 0 => say "NODE_ACTION:SAFE_EXECUTION_ALLOWED"
+  when 0 => say "NODE_APPROVAL:NO"
+  when 0 => say "NODE_RISK:LOW"
+  when 0 => say "NODE_RUNTIME:TEXT_UI_API_ONLY"
+  when 0 => say "NODE_ALLOWED:YES"
+  when 0 => say "NODE_REASON:NOVA permits only safe adapter execution"
+
+  when 1 => say "NODE_CONTRACT:UNIVERSAL_ADAPTER"
+  when 1 => say "NODE_CHANNEL:SYSTEM"
+  when 1 => say "NODE_ACTION:RAW_RUNTIME_BLOCKED"
+  when 1 => say "NODE_APPROVAL:YES"
+  when 1 => say "NODE_RISK:CRITICAL"
+  when 1 => say "NODE_RUNTIME:NO_RAW_TERMINAL"
+  when 1 => say "NODE_ALLOWED:NO"
+  when 1 => say "NODE_REASON:Raw terminal or dangerous execution is blocked"
+}
+
+say "NOVA/QBIT Universal adapter contract v1 online"
