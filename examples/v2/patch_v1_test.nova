@@ -1,0 +1,8 @@
+brain universal_dragon
+intent "test nova patch syntax"
+
+patch "examples/v2/patch_v1_target.txt" {
+  replace "old nova" => "new nova"
+}
+
+say "Patch system online"

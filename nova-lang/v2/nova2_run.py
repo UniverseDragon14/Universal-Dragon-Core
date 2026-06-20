@@ -259,6 +259,40 @@ class NovaRuntime:
                 print(f"reset {name}")
                 print(f"register: {self.qworld.register_text()}")
 
+            elif t == "Patch":
+                rel_path = self.eval_value(node["path"])
+                root = Path.cwd().resolve()
+                target = (root / rel_path).resolve()
+
+                if not str(target).startswith(str(root)):
+                    print(f"patch blocked outside project: {rel_path}")
+                    continue
+
+                if not target.exists():
+                    print(f"patch file not found: {rel_path}")
+                    continue
+
+                text = target.read_text()
+                changed = False
+
+                for op in node["operations"]:
+                    if op["op"] == "replace":
+                        old = self.eval_value(op["old"])
+                        new = self.eval_value(op["new"])
+
+                        if old not in text:
+                            print(f"patch replace skipped: text not found in {rel_path}")
+                        else:
+                            text = text.replace(old, new)
+                            changed = True
+                            print(f"patch replace applied: {rel_path}")
+
+                if changed:
+                    target.write_text(text)
+                    print(f"patch saved: {rel_path}")
+                else:
+                    print(f"patch no changes: {rel_path}")
+
             elif t == "OBSERVE":
                 name = node["target"]
                 result = self.qworld.measure(name)

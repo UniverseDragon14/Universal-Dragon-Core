@@ -5,7 +5,7 @@ import sys
 from dataclasses import dataclass
 
 KEYWORDS = {
-    "brain", "intent", "when", "simulate", "guard", "let", "say", "fn", "return", "task", "backup",
+    "brain", "intent", "when", "simulate", "guard", "patch", "replace", "let", "say", "fn", "return", "task", "backup",
     "run", "if", "error", "rollback", "qbit", "h", "x", "z", "state", "prob", "reset", "measure", "observe", "cnot"
 }
 
@@ -127,6 +127,37 @@ class Parser:
             self.expect(value="=")
             state = self.expect(kind="QSTATE").value
             return {"type": "Qbit", "name": name, "state": state}
+
+        if word == "patch":
+            self.advance()
+            path = self.expect(kind="STRING").value
+            self.expect(value="{")
+            operations = []
+
+            while self.peek().value != "}":
+                while self.peek().kind == "NEWLINE":
+                    self.advance()
+
+                if self.peek().value == "}":
+                    break
+
+                self.expect(value="replace")
+                old_text = self.expect(kind="STRING").value
+                self.expect(value="=")
+                self.expect(value=">")
+                new_text = self.expect(kind="STRING").value
+
+                operations.append({
+                    "op": "replace",
+                    "old": old_text,
+                    "new": new_text
+                })
+
+                while self.peek().kind == "NEWLINE":
+                    self.advance()
+
+            self.expect(value="}")
+            return {"type": "Patch", "path": path, "operations": operations}
 
         if word == "guard":
             self.advance()
