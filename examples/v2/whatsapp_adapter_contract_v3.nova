@@ -1,0 +1,32 @@
+brain universal_dragon
+intent "produce full whatsapp adapter contract with risk and runtime permission"
+
+qbit adapter_action = |0>
+
+simulate adapter_action {
+  when 0 => "safe reply allowed"
+  when 1 => "owner approval required"
+}
+
+prob adapter_action
+observe adapter_action
+
+guard adapter_action {
+  when 0 => say "NODE_CHANNEL:WHATSAPP"
+  when 0 => say "NODE_ACTION:CALL_SAFE_REPLY"
+  when 0 => say "NODE_APPROVAL:NO"
+  when 0 => say "NODE_RISK:LOW"
+  when 0 => say "NODE_RUNTIME:TEXT_OR_VOICE_NOTE_ONLY"
+  when 0 => say "NODE_ALLOWED:YES"
+  when 0 => say "NODE_REASON:Safe reply can be sent without live call answering"
+
+  when 1 => say "NODE_CHANNEL:WHATSAPP"
+  when 1 => say "NODE_ACTION:OWNER_APPROVAL_REQUIRED"
+  when 1 => say "NODE_APPROVAL:YES"
+  when 1 => say "NODE_RISK:HIGH"
+  when 1 => say "NODE_RUNTIME:NO_AUTO_CALL"
+  when 1 => say "NODE_ALLOWED:NO"
+  when 1 => say "NODE_REASON:Live call or outgoing call needs Aslam approval"
+}
+
+say "NOVA/QBIT WhatsApp adapter contract v3 online"
