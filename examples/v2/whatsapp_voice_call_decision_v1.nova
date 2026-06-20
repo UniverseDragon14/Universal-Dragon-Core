@@ -1,0 +1,19 @@
+brain universal_dragon
+intent "handle whatsapp voice reply and incoming call safely"
+
+qbit call_action = |0>
+
+simulate call_action {
+  when 0 => "notify owner and send busy reply"
+  when 1 => "voice reply requires owner approval"
+}
+
+prob call_action
+observe call_action
+
+guard call_action {
+  when 0 => say "CALL_SAFE_REPLY"
+  when 1 => say "OWNER_APPROVAL_REQUIRED"
+}
+
+say "WhatsApp voice call decision online"
