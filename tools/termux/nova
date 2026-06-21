@@ -1,0 +1,22 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+ROOT="$HOME/ud-github-sync"
+
+if [ "$1" = "run" ]; then
+  shift
+  python3 "$ROOT/nova-lang/v2/nova2_run.py" "$@"
+elif [ "$1" = "note" ]; then
+  shift
+  mkdir -p "$HOME/nova-lang/notes"
+  echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$HOME/nova-lang/notes/nova_notes.log"
+  echo "Noted."
+elif [ "$1" = "backup" ]; then
+  mkdir -p "$HOME/nova-lang/backups"
+  tar -czf "$HOME/nova-lang/backups/backup_$(date +%Y%m%d_%H%M%S).tar.gz" "$ROOT" "$HOME/nova-lang" 2>/dev/null
+  ls -lh "$HOME/nova-lang/backups" | tail -3
+else
+  echo "NOVA commands:"
+  echo "  nova run <file.nova>"
+  echo "  nova note <message>"
+  echo "  nova backup"
+fi
