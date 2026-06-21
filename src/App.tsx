@@ -86,7 +86,7 @@ export default function App() {
         const messages = isError ? MOCK_SYSTEM_ERRORS : MOCK_SYSTEM_EVENTS;
         const msg = messages[Math.floor(Math.random() * messages.length)];
         setSystemLogs(prev => [...prev.slice(-10), {
-          type: isError ? 'ERROR',
+          type: isError ? 'ERROR' : 'EVENT',
           message: msg,
           timestamp: timestamp
         }]);
