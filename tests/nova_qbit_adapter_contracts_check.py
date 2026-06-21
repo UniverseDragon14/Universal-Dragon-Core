@@ -20,6 +20,18 @@ TESTS = [
         ],
     },
     {
+        "name": "universal_adapter_router_v1",
+        "file": ROOT / "examples" / "v2" / "universal_adapter_router_v1.nova",
+        "must": [
+            "NODE_ROUTER:UNIVERSAL_DRAGON",
+            "NODE_TARGET:SAFE_ADAPTER",
+            "NODE_ROUTE:ALLOW",
+            "NODE_RUNTIME:TEXT_UI_API_ONLY",
+            "NODE_APPROVAL:NO",
+            "NODE_REASON:Safe adapter request routed by NOVA/QBIT",
+        ],
+    },
+    {
         "name": "universal_adapter_contract_v1",
         "file": ROOT / "examples" / "v2" / "universal_adapter_contract_v1.nova",
         "must": [
