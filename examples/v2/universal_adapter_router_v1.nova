@@ -1,0 +1,30 @@
+brain universal_dragon
+intent "route safe external adapter request"
+
+qbit router_mode = |0>
+
+simulate router_mode {
+  when 0 => "safe adapter route allowed"
+  when 1 => "dangerous adapter route blocked"
+}
+
+prob router_mode
+observe router_mode
+
+guard router_mode {
+  when 0 => say "NODE_ROUTER:UNIVERSAL_DRAGON"
+  when 0 => say "NODE_TARGET:SAFE_ADAPTER"
+  when 0 => say "NODE_ROUTE:ALLOW"
+  when 0 => say "NODE_RUNTIME:TEXT_UI_API_ONLY"
+  when 0 => say "NODE_APPROVAL:NO"
+  when 0 => say "NODE_REASON:Safe adapter request routed by NOVA/QBIT"
+
+  when 1 => say "NODE_ROUTER:UNIVERSAL_DRAGON"
+  when 1 => say "NODE_TARGET:SYSTEM"
+  when 1 => say "NODE_ROUTE:BLOCK"
+  when 1 => say "NODE_RUNTIME:NO_RAW_TERMINAL"
+  when 1 => say "NODE_APPROVAL:YES"
+  when 1 => say "NODE_REASON:Dangerous adapter request blocked by NOVA/QBIT"
+}
+
+say "NOVA/QBIT universal adapter router v1 online"
