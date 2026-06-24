@@ -1,0 +1,91 @@
+name: QBIT NOVA CI and SEO
+
+on:
+  push:
+    branches:
+      - nova-v1.4.0-dev
+  pull_request:
+    branches:
+      - nova-v1.4.0-dev
+
+jobs:
+  qbit-nova-ci-seo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: QBIT NOVA doctor
+        run: python3 tools/nova_cli.ud doctor
+
+      - name: Run QBIT NOVA world source
+        run: python3 tools/nova_cli.ud run examples/v2/qbit_nova_world.ud
+
+      - name: Check Universal Dragon identity files
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          readme = Path("README.md").read_text(encoding="utf-8")
+          meta = json.loads(Path("metadata.json").read_text(encoding="utf-8"))
+          world = Path("examples/v2/qbit_nova_world.ud").read_text(encoding="utf-8")
+
+          required_readme = [
+              "UD means Universal Dragon",
+              "Creator: Aslam",
+              "Team: Askutty",
+              "Brain: NovaKutty",
+              "Language: QBIT NOVA",
+              "Source extension: `.ud`",
+          ]
+
+          for item in required_readme:
+              assert item in readme, f"README missing: {item}"
+
+          assert meta["creator"] == "Aslam"
+          assert meta["team"] == "Askutty"
+          assert meta["brain"] == "NovaKutty"
+          assert meta["language"] == "QBIT NOVA"
+          assert meta["sourceExtension"] == ".ud"
+
+          assert "nova universal_dragon" in world
+          assert "creator aslam" in world
+          assert "team askutty" in world
+          assert "brain novakutty" in world
+
+          print("QBIT NOVA identity check passed")
+          PY
+
+      - name: Basic SEO/static check
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          html_files = [Path("index.html"), Path("public/index.html")]
+          found = False
+
+          for p in html_files:
+              if p.exists():
+                  found = True
+                  html = p.read_text(encoding="utf-8", errors="ignore").lower()
+                  print(f"Checking SEO/static file: {p}")
+
+                  if "<title" not in html:
+                      print("SEO WARNING: title tag missing")
+                  if "description" not in html:
+                      print("SEO WARNING: meta description missing")
+                  if "universal dragon" not in html:
+                      print("SEO WARNING: Universal Dragon text missing")
+
+          if not found:
+              print("SEO INFO: no index.html found for static SEO check")
+
+          print("SEO/static check completed")
+          PY
