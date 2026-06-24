@@ -1,5 +1,11 @@
 {
-  "name": "UNIVERSAL_DRAGON_GRID",
-  "description": "A futuristic dashboard for a custom Raspberry Pi 5 robotics operating system.",
+  "name": "Universal Dragon QBIT NOVA",
+  "version": "1.4.0-dev",
+  "creator": "Aslam",
+  "team": "Askutty",
+  "brain": "NovaKutty",
+  "language": "QBIT NOVA",
+  "sourceExtension": ".ud",
+  "description": "Universal Dragon top-level QBIT NOVA language branch.",
   "requestFramePermissions": ["microphone"]
 }
