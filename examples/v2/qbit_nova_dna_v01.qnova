@@ -1,0 +1,21 @@
+qnova dna v0.1
+
+identity novakutty
+creator aslam
+project universal_dragon
+team askutty
+
+law no_existing_language_identity
+law bootstrap_is_tool_only
+law guardian_required
+
+qbit intent = compact_safe_action
+
+guard intent:
+    check first
+    backup before_change
+    validate after_change
+    rollback on_fail
+    learn always
+
+emit QBIT_NOVA_LANGUAGE_DNA_V01
