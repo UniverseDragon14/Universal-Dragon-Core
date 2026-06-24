@@ -1,45 +1,58 @@
-# Universal Dragon Core - NOVA
+# Universal Dragon Core - QBIT NOVA
 
-Creator: Aslam  
-Core: NOVA  
-Branch: Termux Mobile Field Lab  
-Runtime: Python  
+UD means Universal Dragon.
 
-## Current Version
+Creator: Aslam
+Team: Askutty
+Brain: NovaKutty
+Language: QBIT NOVA
+Source extension: `.ud`
+Version: `1.4.0-dev`
+Branch: `nova-v1.4.0-dev`
 
-NOVA Python Core v1.3.1
+QBIT NOVA is the top-level Universal Dragon language. The user writes `.ud` source files only.
 
-## Features
+## Core Identity
 
-- `.nova` file runner
-- variables
-- math calculation
-- if/end blocks
-- repeat/end loops
-- define/call functions
-- function arguments
-- use/import library files
-- doctor check
-- manifest generation
-- export/import preview
-- Pi5 syncpack and synccheck
+QBIT NOVA is not a public Python, C, C++, Java, HTML, or TypeScript project.
+
+Other technologies may exist later only as hidden compiler/runtime targets. The visible language identity is QBIT NOVA.
 
 ## Quick Test
 
 ```bash
-nova version
 nova doctor
-nova synccheck
+nova run examples/v2/qbit_nova_world.ud
+nova qbit examples/v2/qbit_test.qnova
+```
+
+## QBIT NOVA Example
+
+```ud
+nova universal_dragon
+creator aslam
+team askutty
+brain novakutty
+
+say "QBIT NOVA language online"
+
+qbit dragon = |0>
+h dragon
+measure dragon
+
+guard:
+  owner_approval required
+  dangerous_action deny
+```
 
 <!-- NOVA_QBIT_STATUS_START -->
 ## NOVA QBIT Test Status
 
 [![NOVA QBIT Tests](https://github.com/UniverseDragon14/Universal-Dragon-Core/actions/workflows/qbit-tests.yml/badge.svg?branch=nova-v1.4.0-dev)](https://github.com/UniverseDragon14/Universal-Dragon-Core/actions/workflows/qbit-tests.yml)
 
-NOVA QBIT is now tested automatically with GitHub Actions.
-
 Current verified QBIT features:
 
+- QBIT NOVA `.ud` source preprocessor
 - Single qbit gates: H, X, Z
 - State and probability display
 - Measurement collapse
@@ -51,59 +64,12 @@ Current verified QBIT features:
 
 Latest locked milestone:
 
-`NOVA QBIT v2 has passed automated GitHub CI testing.`
+`QBIT NOVA v1.4.0-dev has started as the Universal Dragon language branch.`
 
 <!-- NOVA_QBIT_STATUS_END -->
 
----
-
-# NOVA/QBIT Language
-
-NOVA/QBIT is an experimental decision-language layer created under Universal Dragon by Aslam.
-
-Current version: 0.3.0-contract
-
-## Purpose
-
-NOVA/QBIT separates decision logic from execution.
-
-NOVA decides intent, qbit state, probability, observed state, guard result, and adapter contract output.
-
-External adapters such as WhatsApp, web apps, APIs, or system bridges only obey the emitted contract.
-
-## Core Keywords
-
-brain, intent, qbit, simulate, prob, observe, guard, say, patch, replace
-
-## Adapter Contract Fields
-
-NODE_CONTRACT
-NODE_CHANNEL
-NODE_ACTION
-NODE_APPROVAL
-NODE_RISK
-NODE_RUNTIME
-NODE_ALLOWED
-NODE_REASON
-
-## Run Examples
-
-python3 nova-lang/v2/nova2_run.py examples/v2/universal_adapter_contract_v1.nova
-python3 nova-lang/v2/nova2_run.py examples/v2/whatsapp_adapter_contract_v3.nova
-
-## Run Tests
-
-python3 tests/nova_qbit_adapter_contracts_check.py
-
-## Spec Files
-
-docs/spec/NOVA_QBIT_LANGUAGE_SPEC_V0_3.md
-docs/spec/NOVA_QBIT_GRAMMAR_V0_3.md
-
 ## Safety
 
-NOVA/QBIT allows safe adapter output and owner approval flows.
+QBIT NOVA allows safe adapter output and owner approval flows.
 
 It blocks raw terminal execution through external adapters and does not allow automatic live call answering or dangerous system mutation without approval.
-
----
