@@ -1,0 +1,23 @@
+nova universal_dragon
+creator aslam
+team askutty
+brain novakutty
+
+say "QBIT NOVA Game v2: Dragon Choice"
+
+runtime conditional
+
+let player = "Aslam"
+let mission = "face boss gate"
+
+qbit dragon = |1>
+measure dragon
+
+when dragon == 0:
+  say "GAME PATH: safe route unlocked"
+  say "RESULT: dragon gate opened"
+
+when dragon == 1:
+  say "GAME PATH: boss approval route"
+  say "PLAYER: Aslam"
+  say "RESULT: owner approval needed"
