@@ -1,0 +1,42 @@
+name: QBIT NOVA v1.0 CLI Native
+
+on:
+  push:
+    branches:
+      - nova-v1.4.0-dev
+  pull_request:
+    branches:
+      - nova-v1.4.0-dev
+
+jobs:
+  qbit-v10-cli-native:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Syntax check
+        run: |
+          python3 -m py_compile tools/nova_cli.ud
+          python3 -m py_compile engine/qbit_nova_v07_engine.py
+          python3 -m py_compile engine/qbit_nova_v08_tokenizer.py
+          python3 -m py_compile engine/qbit_nova_v09_token_parser.py
+          python3 -m py_compile engine/qbit_nova_v09_pipeline.py
+
+      - name: QBIT NOVA v1.0 CLI native proof
+        run: |
+          python3 tests/qbit_nova_v10_cli_native_check.py
+
+      - name: Manual command smoke test
+        run: |
+          python3 tools/nova_cli.ud doctor
+          python3 tools/nova_cli.ud native examples/v2/qbit_nova_v07_native_zero.ud
+          python3 tools/nova_cli.ud tokens examples/v2/qbit_nova_v07_native_zero.ud
+          python3 tools/nova_cli.ud ast-native examples/v2/qbit_nova_v07_native_zero.ud
+          python3 tools/nova_cli.ud ir examples/v2/qbit_nova_v07_native_zero.ud

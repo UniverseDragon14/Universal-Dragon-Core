@@ -24,6 +24,10 @@ def help_text():
     print("  nova qbit <file.ud|file.qnova>")
     print("  nova note <message>")
     print("  nova backup")
+    print("  nova native <file.ud>")
+    print("  nova tokens <file.ud>")
+    print("  nova ast-native <file.ud>")
+    print("  nova ir <file.ud>")
     print("  nova doctor")
 
 
@@ -584,6 +588,76 @@ def run_nova(file_arg: str) -> int:
     return subprocess.call([sys.executable, str(RUNNER), str(target)])
 
 
+
+# QBIT_NOVA_V10_CLI_NATIVE_COMMANDS
+def _qbit_engine_script(name: str) -> Path:
+    script = ROOT / "engine" / name
+    if not script.exists():
+        print(f"QBIT NOVA engine script missing: {script}")
+        sys.exit(2)
+    return script
+
+
+def _call_qbit_engine(script_name: str, file_arg: str) -> int:
+    target = resolve_file(file_arg)
+    script = _qbit_engine_script(script_name)
+    return subprocess.call([sys.executable, str(script), str(target)], cwd=str(ROOT))
+
+
+def native_nova(file_arg: str) -> int:
+    print("QBIT NOVA v1.0 CLI native command")
+    return _call_qbit_engine("qbit_nova_v09_pipeline.py", file_arg)
+
+
+def tokens_nova(file_arg: str) -> int:
+    print("QBIT NOVA v1.0 CLI tokens command")
+    return _call_qbit_engine("qbit_nova_v08_tokenizer.py", file_arg)
+
+
+def ast_native_nova(file_arg: str) -> int:
+    print("QBIT NOVA v1.0 CLI ast-native command")
+    return _call_qbit_engine("qbit_nova_v09_token_parser.py", file_arg)
+
+
+def ir_nova(file_arg: str) -> int:
+    target = resolve_file(file_arg)
+
+    engine_dir = ROOT / "engine"
+    if str(engine_dir) not in sys.path:
+        sys.path.insert(0, str(engine_dir))
+
+    import qbit_nova_v07_engine as native_engine
+    import qbit_nova_v09_token_parser as token_parser
+    import qbit_nova_v09_pipeline as token_pipeline
+
+    try:
+        ast = token_parser.parse_file(target)
+        ast = token_pipeline.normalize_ast(ast)
+    except SyntaxError as err:
+        print("QBIT NOVA v1.0 IR command RED")
+        print(str(err))
+        print("QBIT_NOVA_V10_IR_RED")
+        return 1
+
+    errors = native_engine.semantic_errors(ast)
+
+    if errors:
+        print("QBIT NOVA v1.0 IR command semantic RED")
+        for err in errors:
+            print(f"- {err}")
+        print("QBIT_NOVA_V10_IR_RED")
+        return 1
+
+    print("QBIT NOVA v1.0 IR command")
+    print("source: " + str(target))
+    print("QBIT_IR_BEGIN")
+    for line in native_engine.compile_ir(ast):
+        print(line)
+    print("QBIT_IR_END")
+    print("QBIT_NOVA_V10_IR_GREEN")
+    return 0
+
+
 def note(args):
     notes_dir = Path.home() / "nova-lang" / "notes"
     notes_dir.mkdir(parents=True, exist_ok=True)
@@ -637,6 +711,21 @@ def main():
             print(f"Usage: nova {cmd} <file.ud>")
             return 1
         return run_nova(args[0])
+
+
+    if cmd in ("native", "tokens", "ast-native", "ir"):
+        if not args:
+            print(f"Usage: nova {cmd} <file.ud>")
+            return 1
+
+        handlers = {
+            "native": native_nova,
+            "tokens": tokens_nova,
+            "ast-native": ast_native_nova,
+            "ir": ir_nova,
+        }
+
+        return handlers[cmd](args[0])
 
     if cmd == "note":
         note(args)
