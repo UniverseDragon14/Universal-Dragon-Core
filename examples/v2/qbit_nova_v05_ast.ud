@@ -1,0 +1,26 @@
+nova universal_dragon
+creator aslam
+team askutty
+brain novakutty
+
+say "QBIT NOVA v0.5 AST online"
+
+runtime conditional
+
+let player = "Aslam"
+let mission = "AST proof"
+
+qbit dragon = |0>
+h dragon
+measure dragon
+
+when dragon == 0:
+  say "AST safe branch"
+
+when dragon == 1:
+  say "AST owner branch"
+
+adapter whatsapp:
+  mode safe_reply
+  owner_approval required
+  dangerous_action deny

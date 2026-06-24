@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import sys
+import json
 import subprocess
 import datetime
 import tarfile
@@ -245,6 +246,183 @@ def run_ud_v04_conditional(target: Path) -> int:
     return 0
 
 
+
+# QBIT_NOVA_V05_AST_EXPORT
+def parse_ud_ast(target: Path) -> dict:
+    ast = {
+        "language": "QBIT NOVA",
+        "ud": "Universal Dragon",
+        "creator": None,
+        "team": None,
+        "brain": None,
+        "source": str(target),
+        "memory": [],
+        "qbits": [],
+        "gates": [],
+        "measurements": [],
+        "says": [],
+        "when_blocks": [],
+        "adapters": [],
+        "runtime": [],
+    }
+
+    lines = target.read_text(encoding="utf-8").splitlines()
+    i = 0
+
+    while i < len(lines):
+        raw = lines[i]
+        line = raw.strip()
+
+        if not line or line.startswith("#"):
+            i += 1
+            continue
+
+        if line.startswith("nova "):
+            ast["nova"] = line.split(maxsplit=1)[1].strip()
+            i += 1
+            continue
+
+        if line.startswith("creator "):
+            ast["creator"] = line.split(maxsplit=1)[1].strip().title()
+            i += 1
+            continue
+
+        if line.startswith("team "):
+            ast["team"] = line.split(maxsplit=1)[1].strip().title()
+            i += 1
+            continue
+
+        if line.startswith("brain "):
+            name = line.split(maxsplit=1)[1].strip()
+            ast["brain"] = {"novakutty": "NovaKutty"}.get(name.lower(), name)
+            i += 1
+            continue
+
+        if line.startswith("let "):
+            rest = line[4:].strip()
+            if "=" in rest:
+                key, value = rest.split("=", 1)
+                ast["memory"].append({
+                    "name": key.strip(),
+                    "value": _ud_unquote(value.strip()),
+                })
+            else:
+                ast["memory"].append({"name": rest, "value": None})
+            i += 1
+            continue
+
+        if line.startswith("qbit "):
+            rest = line[5:].strip()
+            if "=" in rest:
+                name, state = rest.split("=", 1)
+                ast["qbits"].append({
+                    "name": name.strip(),
+                    "state": state.strip(),
+                })
+            i += 1
+            continue
+
+        if line.startswith(("h ", "x ", "z ")):
+            parts = line.split()
+            ast["gates"].append({
+                "gate": parts[0],
+                "target": parts[1] if len(parts) > 1 else "",
+            })
+            i += 1
+            continue
+
+        if line.startswith("cnot "):
+            ast["gates"].append({
+                "gate": "cnot",
+                "target": line[5:].strip(),
+            })
+            i += 1
+            continue
+
+        if line.startswith("measure "):
+            ast["measurements"].append({
+                "target": line.split(maxsplit=1)[1].strip(),
+            })
+            i += 1
+            continue
+
+        if line.startswith("say "):
+            ast["says"].append(_ud_unquote(line[4:].strip()))
+            i += 1
+            continue
+
+        if line == "runtime conditional":
+            ast["runtime"].append("conditional")
+            i += 1
+            continue
+
+        if line.startswith("when ") and line.endswith(":"):
+            condition = line[5:-1].strip()
+            body = []
+            i += 1
+
+            while i < len(lines):
+                child_raw = lines[i]
+                child = child_raw.strip()
+
+                if not child:
+                    i += 1
+                    continue
+
+                if not child_raw.startswith((" ", "\t")):
+                    break
+
+                body.append(child)
+                i += 1
+
+            ast["when_blocks"].append({
+                "condition": condition,
+                "body": body,
+            })
+            continue
+
+        if line.startswith("adapter ") and line.endswith(":"):
+            name = line[8:-1].strip()
+            body = []
+            i += 1
+
+            while i < len(lines):
+                child_raw = lines[i]
+                child = child_raw.strip()
+
+                if not child:
+                    i += 1
+                    continue
+
+                if not child_raw.startswith((" ", "\t")):
+                    break
+
+                body.append(child)
+                i += 1
+
+            ast["adapters"].append({
+                "name": name,
+                "body": body,
+            })
+            continue
+
+        i += 1
+
+    return ast
+
+
+def ast_nova(file_arg: str) -> int:
+    target = resolve_file(file_arg)
+
+    if target.suffix.lower() != ".ud":
+        print("QBIT NOVA AST supports .ud files only")
+        return 1
+
+    ast = parse_ud_ast(target)
+    print(json.dumps(ast, indent=2, ensure_ascii=False))
+    return 0
+
+
 def run_nova(file_arg: str) -> int:
     if not RUNNER.exists():
         print(f"QBIT NOVA runner not found: {RUNNER}")
@@ -326,6 +504,12 @@ def main():
     if cmd == "backup":
         backup()
         return 0
+
+    if cmd == "ast":
+        if not args:
+            print("Usage: nova ast <file.ud>")
+            return 1
+        return ast_nova(args[0])
 
     if cmd in ("doctor", "version"):
         doctor()

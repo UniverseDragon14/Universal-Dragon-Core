@@ -39,6 +39,9 @@ jobs:
       - name: Run QBIT NOVA Game v2 test
         run: python3 tests/qbit_nova_game_v2_check.py
 
+      - name: Run QBIT NOVA v0.5 AST test
+        run: python3 tests/qbit_nova_v05_ast_check.py
+
       - name: Check Universal Dragon identity files
         run: |
           python3 - <<'CHECK'
