@@ -1,0 +1,14 @@
+nova universal_dragon
+creator unknown
+team askutty
+brain novakutty
+
+runtime conditional
+
+qbit dragon = |9>
+
+when dragon == 0:
+  say "bad branch"
+
+adapter whatsapp:
+  mode unsafe

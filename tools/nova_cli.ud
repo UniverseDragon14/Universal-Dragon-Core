@@ -423,6 +423,147 @@ def ast_nova(file_arg: str) -> int:
     return 0
 
 
+
+# QBIT_NOVA_V06_SEMANTIC_CHECKER
+def _semantic_error(errors, message: str):
+    errors.append(message)
+
+
+def semantic_check_ud(target: Path) -> tuple[bool, list[str], dict]:
+    ast = parse_ud_ast(target)
+    errors = []
+
+    qbit_names = {item.get("name") for item in ast.get("qbits", []) if item.get("name")}
+    measured_names = {item.get("target") for item in ast.get("measurements", []) if item.get("target")}
+
+    if ast.get("language") != "QBIT NOVA":
+        _semantic_error(errors, "language must be QBIT NOVA")
+
+    if ast.get("creator") != "Aslam":
+        _semantic_error(errors, "creator must be Aslam")
+
+    if ast.get("team") != "Askutty":
+        _semantic_error(errors, "team must be Askutty")
+
+    if ast.get("brain") != "NovaKutty":
+        _semantic_error(errors, "brain must be NovaKutty")
+
+    if not qbit_names:
+        _semantic_error(errors, "at least one qbit is required")
+
+    valid_states = {"|0>", "|1>"}
+    for qbit in ast.get("qbits", []):
+        name = qbit.get("name")
+        state = qbit.get("state")
+        if state not in valid_states:
+            _semantic_error(errors, f"qbit {name} has invalid state {state}")
+
+    for gate in ast.get("gates", []):
+        target_name = gate.get("target", "").strip()
+        if gate.get("gate") == "cnot":
+            parts = [p.strip() for p in target_name.replace(",", " ").split() if p.strip()]
+            for part in parts:
+                if part not in qbit_names:
+                    _semantic_error(errors, f"gate cnot target {part} is not declared qbit")
+        else:
+            if target_name not in qbit_names:
+                _semantic_error(errors, f"gate {gate.get('gate')} target {target_name} is not declared qbit")
+
+    for measurement in ast.get("measurements", []):
+        target_name = measurement.get("target")
+        if target_name not in qbit_names:
+            _semantic_error(errors, f"measure target {target_name} is not declared qbit")
+
+    when_blocks = ast.get("when_blocks", [])
+
+    if when_blocks and "conditional" not in ast.get("runtime", []):
+        _semantic_error(errors, "when blocks require runtime conditional")
+
+    for block in when_blocks:
+        condition = block.get("condition", "").strip()
+
+        if "==" not in condition:
+            _semantic_error(errors, f"when condition must use == : {condition}")
+            continue
+
+        left, right = [part.strip() for part in condition.split("==", 1)]
+
+        if left not in qbit_names:
+            _semantic_error(errors, f"when qbit {left} is not declared")
+
+        if left not in measured_names:
+            _semantic_error(errors, f"when qbit {left} must be measured before branch")
+
+        if right not in {"0", "1"}:
+            _semantic_error(errors, f"when value must be 0 or 1: {condition}")
+
+        body = block.get("body", [])
+        if not body:
+            _semantic_error(errors, f"when block has empty body: {condition}")
+
+    for adapter in ast.get("adapters", []):
+        name = adapter.get("name", "")
+        body = adapter.get("body", [])
+
+        if name == "whatsapp":
+            required = [
+                "mode safe_reply",
+                "owner_approval required",
+                "dangerous_action deny",
+            ]
+
+            for item in required:
+                if item not in body:
+                    _semantic_error(errors, f"adapter whatsapp missing: {item}")
+
+        for line in body:
+            lower = line.lower().strip()
+            blocked_prefixes = (
+                "shell ",
+                "exec ",
+                "terminal ",
+                "curl ",
+                "wget ",
+                "rm ",
+                "sudo ",
+            )
+            if lower.startswith(blocked_prefixes):
+                _semantic_error(errors, f"adapter contains raw system command: {line}")
+
+    return len(errors) == 0, errors, ast
+
+
+def check_nova(file_arg: str) -> int:
+    target = resolve_file(file_arg)
+
+    if target.suffix.lower() != ".ud":
+        print("QBIT NOVA semantic checker supports .ud files only")
+        return 1
+
+    ok, errors, ast = semantic_check_ud(target)
+
+    print("QBIT NOVA semantic check")
+    print(f"source: {target}")
+    print(f"creator: {ast.get('creator')}")
+    print(f"team: {ast.get('team')}")
+    print(f"brain: {ast.get('brain')}")
+    print(f"qbits: {len(ast.get('qbits', []))}")
+    print(f"measurements: {len(ast.get('measurements', []))}")
+    print(f"when_blocks: {len(ast.get('when_blocks', []))}")
+    print(f"adapters: {len(ast.get('adapters', []))}")
+
+    if errors:
+        print("semantic status: RED")
+        for err in errors:
+            print(f"- {err}")
+        print("QBIT_NOVA_V06_SEMANTIC_RED")
+        return 1
+
+    print("semantic status: GREEN")
+    print("QBIT_NOVA_V06_SEMANTIC_GREEN")
+    return 0
+
+
 def run_nova(file_arg: str) -> int:
     if not RUNNER.exists():
         print(f"QBIT NOVA runner not found: {RUNNER}")
@@ -510,6 +651,12 @@ def main():
             print("Usage: nova ast <file.ud>")
             return 1
         return ast_nova(args[0])
+
+    if cmd == "check":
+        if not args:
+            print("Usage: nova check <file.ud>")
+            return 1
+        return check_nova(args[0])
 
     if cmd in ("doctor", "version"):
         doctor()
