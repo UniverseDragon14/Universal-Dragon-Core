@@ -70,7 +70,8 @@ def preprocess_ud(target: Path) -> Path:
 
         if line.startswith("brain "):
             name = line.split(maxsplit=1)[1]
-            out.append(f'say "Brain: {_qbit_nova_quote(name.title())}"')
+            brain_name = {"novakutty": "NovaKutty"}.get(name.lower(), name)
+            out.append(f'say "Brain: {_qbit_nova_quote(brain_name)}"')
             continue
 
         if line.startswith("say "):
@@ -86,7 +87,15 @@ def preprocess_ud(target: Path) -> Path:
             out.append(f'say "{_qbit_nova_quote(block)} block loaded"')
             continue
 
-        if line.startswith(("title ", "mode ", "owner_approval ", "dangerous_action ")):
+        if line.startswith("title "):
+            title = line.split(maxsplit=1)[1].strip()
+            title = title.replace("\\", "")
+            if (title.startswith(chr(34)) and title.endswith(chr(34))) or (title.startswith(chr(39)) and title.endswith(chr(39))):
+                title = title[1:-1]
+            out.append(f'say "Title: {_qbit_nova_quote(title)}"')
+            continue
+
+        if line.startswith(("mode ", "owner_approval ", "dangerous_action ")):
             out.append(f'say "{_qbit_nova_quote(line)}"')
             continue
 
