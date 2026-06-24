@@ -1,0 +1,4 @@
+say "Universal Dragon online"
+qbit dragon = |0>
+h dragon
+measure dragon
