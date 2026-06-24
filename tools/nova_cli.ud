@@ -4,6 +4,7 @@ import sys
 import subprocess
 import datetime
 import tarfile
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "nova-lang" / "v2" / "nova2_run.py"
@@ -26,11 +27,72 @@ def resolve_file(name: str) -> Path:
     print(f"NOVA file not found: {name}")
     sys.exit(2)
 
+def _qbit_nova_quote(text: str) -> str:
+    return text.replace("\\\\", "\\\\\\\\").replace("\"", "\\\"")
+
+
+def preprocess_ud(target: Path) -> Path:
+    if target.suffix.lower() != ".ud":
+        return target
+
+    out = []
+
+    for raw in target.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        if line.startswith("nova "):
+            name = line.split(maxsplit=1)[1]
+            out.append(f'say "QBIT NOVA source: {_qbit_nova_quote(name)}"')
+            continue
+
+        if line.startswith("creator "):
+            name = line.split(maxsplit=1)[1]
+            out.append(f'say "Creator: {_qbit_nova_quote(name.title())}"')
+            continue
+
+        if line.startswith("team "):
+            name = line.split(maxsplit=1)[1]
+            out.append(f'say "Team: {_qbit_nova_quote(name.title())}"')
+            continue
+
+        if line.startswith("brain "):
+            name = line.split(maxsplit=1)[1]
+            out.append(f'say "Brain: {_qbit_nova_quote(name.title())}"')
+            continue
+
+        if line.startswith("say "):
+            out.append(line)
+            continue
+
+        if line.startswith(("qbit ", "h ", "cnot ", "measure ", "state ", "prob ", "simulate ")):
+            out.append(line)
+            continue
+
+        if line.endswith(":"):
+            block = line[:-1]
+            out.append(f'say "{_qbit_nova_quote(block)} block loaded"')
+            continue
+
+        if line.startswith(("title ", "mode ", "owner_approval ", "dangerous_action ")):
+            out.append(f'say "{_qbit_nova_quote(line)}"')
+            continue
+
+    temp = Path(tempfile.gettempdir()) / f"qbit_nova_{target.stem}.qnova"
+    temp.write_text("\n".join(out) + "\n", encoding="utf-8")
+    return temp
+
+
 def run_nova(file_arg: str) -> int:
     if not RUNNER.exists():
         print(f"NOVA v2 runner not found: {RUNNER}")
         return 1
+
     target = resolve_file(file_arg)
+    target = preprocess_ud(target)
+
     return subprocess.call([sys.executable, str(RUNNER), str(target)])
 
 def note(args):
