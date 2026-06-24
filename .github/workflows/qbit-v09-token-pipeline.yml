@@ -1,0 +1,40 @@
+name: QBIT NOVA v0.9 Token Pipeline
+
+on:
+  push:
+    branches:
+      - nova-v1.4.0-dev
+  pull_request:
+    branches:
+      - nova-v1.4.0-dev
+
+jobs:
+  qbit-v09-token-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Syntax check
+        run: |
+          python3 -m py_compile engine/qbit_nova_v07_engine.py
+          python3 -m py_compile engine/qbit_nova_v08_tokenizer.py
+          python3 -m py_compile engine/qbit_nova_v08_pipeline.py
+          python3 -m py_compile engine/qbit_nova_v09_token_parser.py
+          python3 -m py_compile engine/qbit_nova_v09_pipeline.py
+
+      - name: v0.8 tokenizer pipeline tests
+        run: |
+          python3 tests/qbit_nova_v08_tokenizer_check.py
+          python3 tests/qbit_nova_v08_pipeline_check.py
+
+      - name: v0.9 token parser pipeline tests
+        run: |
+          python3 tests/qbit_nova_v09_token_parser_check.py
+          python3 tests/qbit_nova_v09_pipeline_check.py
