@@ -19,13 +19,15 @@ Other technologies may exist later only as hidden compiler or runtime targets. T
 - UD meaning: Universal Dragon
 - Creator: Aslam
 - Project identity: Universal Dragon
-- Brain identity: Askutty / NOVA
+- Team identity: Askutty
+- Brain identity: NovaKutty
 
 ## Core Syntax
 
     nova universal_dragon
     creator aslam
-    brain askutty
+    team askutty
+brain novakutty
 
     say "Universal Dragon online"
 

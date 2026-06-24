@@ -14,7 +14,8 @@ The user writes QBIT NOVA only.
 
     nova universal_dragon
     creator aslam
-    brain askutty
+    team askutty
+brain novakutty
 
     say "hello"
 
