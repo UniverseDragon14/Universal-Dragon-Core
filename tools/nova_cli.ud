@@ -128,14 +128,140 @@ def preprocess_ud(target: Path) -> Path:
     return temp
 
 
+
+# QBIT_NOVA_V04_REAL_CONDITIONAL_RUNTIME
+def _ud_unquote(value: str) -> str:
+    value = value.strip()
+    value = value.replace("\\", "")
+    if (value.startswith(chr(34)) and value.endswith(chr(34))) or (value.startswith(chr(39)) and value.endswith(chr(39))):
+        value = value[1:-1]
+    return value
+
+
+def _parse_ud_when_blocks(target: Path):
+    lines = target.read_text(encoding="utf-8").splitlines()
+    blocks = {}
+    i = 0
+
+    while i < len(lines):
+        line = lines[i].strip()
+
+        if line.startswith("when ") and line.endswith(":") and "==" in line:
+            condition = line[5:-1].strip()
+            left, right = condition.split("==", 1)
+            qbit_name = left.strip()
+            state = right.strip()
+            messages = []
+
+            i += 1
+            while i < len(lines):
+                raw = lines[i]
+                stripped = raw.strip()
+
+                if not stripped:
+                    i += 1
+                    continue
+
+                if not raw.startswith((" ", "\t")):
+                    break
+
+                if stripped.startswith("say "):
+                    messages.append(_ud_unquote(stripped[4:].strip()))
+
+                i += 1
+
+            blocks[(qbit_name, state)] = messages
+            continue
+
+        i += 1
+
+    return blocks
+
+
+def run_ud_v04_conditional(target: Path) -> int:
+    temp = preprocess_ud(target)
+
+    result = subprocess.run(
+        [sys.executable, str(RUNNER), str(temp)],
+        cwd=str(ROOT),
+        text=True,
+        capture_output=True,
+    )
+
+    if result.stderr:
+        print(result.stderr, file=sys.stderr)
+
+    if result.returncode != 0:
+        print(result.stdout, end="")
+        return result.returncode
+
+    stdout = result.stdout
+    blocks = _parse_ud_when_blocks(target)
+
+    measured_name = None
+    measured_state = None
+
+    for line in stdout.splitlines():
+        if line.startswith("measure ") and "=>" in line:
+            left, right = line.split("=>", 1)
+            measured_name = left.replace("measure", "", 1).strip()
+            measured_state = right.strip().split()[0]
+            break
+
+    all_branch_messages = set()
+    for msgs in blocks.values():
+        for msg in msgs:
+            all_branch_messages.add(msg)
+
+    filtered = []
+    for line in stdout.splitlines():
+        stripped = line.strip()
+
+        if stripped.startswith("when ") and stripped.endswith("block loaded"):
+            continue
+
+        if stripped in all_branch_messages:
+            continue
+
+        filtered.append(line)
+
+    print("\n".join(filtered))
+
+    if measured_name is None or measured_state is None:
+        print("QBIT NOVA v0.4 conditional error: no measurement found")
+        return 1
+
+    selected = blocks.get((measured_name, measured_state), [])
+
+    print(f"when {measured_name} == {measured_state} selected")
+
+    if not selected:
+        print("QBIT NOVA v0.4 conditional error: no matching when block")
+        return 1
+
+    for msg in selected:
+        print(msg)
+
+    return 0
+
+
 def run_nova(file_arg: str) -> int:
     if not RUNNER.exists():
         print(f"QBIT NOVA runner not found: {RUNNER}")
         return 1
 
     target = resolve_file(file_arg)
-    target = preprocess_ud(target)
 
+    if target.suffix.lower() == ".ud":
+        try:
+            raw = target.read_text(encoding="utf-8", errors="ignore").lower()
+        except Exception:
+            raw = ""
+
+        if "runtime conditional" in raw:
+            return run_ud_v04_conditional(target)
+
+    target = preprocess_ud(target)
     return subprocess.call([sys.executable, str(RUNNER), str(target)])
 
 

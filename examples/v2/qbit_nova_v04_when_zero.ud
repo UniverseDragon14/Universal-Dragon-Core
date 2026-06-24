@@ -1,0 +1,17 @@
+nova universal_dragon
+creator aslam
+team askutty
+brain novakutty
+
+say "QBIT NOVA v0.4 real conditional online"
+
+runtime conditional
+
+qbit dragon = |0>
+measure dragon
+
+when dragon == 0:
+  say "safe branch selected"
+
+when dragon == 1:
+  say "owner approval branch selected"
