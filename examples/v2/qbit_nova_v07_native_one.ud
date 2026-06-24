@@ -1,0 +1,25 @@
+nova universal_dragon
+creator aslam
+team askutty
+brain novakutty
+
+say "QBIT NOVA v0.7 native engine online"
+
+memory player = "Aslam"
+memory mission = "native engine proof"
+
+qbit dragon = |1>
+measure dragon
+
+when dragon == 0:
+  say "native safe branch selected"
+
+when dragon == 1:
+  say "native owner branch selected"
+
+adapter whatsapp:
+  mode safe_reply
+  owner_approval required
+  risky_action deny
+
+runtime native_qvm
