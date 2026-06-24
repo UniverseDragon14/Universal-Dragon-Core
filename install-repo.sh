@@ -23,7 +23,7 @@ fi
 cat > "$PREFIX/bin/nova" <<'NOVAEOF'
 #!/data/data/com.termux/files/usr/bin/bash
 ROOT="$HOME/ud-github-sync"
-python3 "$ROOT/tools/nova_cli.py" "$@"
+python3 "$ROOT/tools/nova_cli.ud" "$@"
 NOVAEOF
 
 chmod +x "$PREFIX/bin/nova"
