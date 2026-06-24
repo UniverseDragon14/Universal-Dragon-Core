@@ -1,0 +1,23 @@
+nova universal_dragon
+creator aslam
+team askutty
+brain novakutty
+
+say "QBIT NOVA v0.3 parser online"
+
+let mission = "world record proof"
+
+qbit dragon = |0>
+h dragon
+measure dragon
+
+when dragon == 0:
+  say "safe branch"
+
+when dragon == 1:
+  say "owner approval branch"
+
+adapter whatsapp:
+  mode safe_reply
+  owner_approval required
+  dangerous_action deny

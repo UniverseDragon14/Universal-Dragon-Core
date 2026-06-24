@@ -30,6 +30,9 @@ jobs:
       - name: Run QBIT NOVA UD contract test
         run: python3 tests/qbit_nova_ud_contract_check.py
 
+      - name: Run QBIT NOVA v0.3 parser contract test
+        run: python3 tests/qbit_nova_v03_contract_check.py
+
       - name: Check Universal Dragon identity files
         run: |
           python3 - <<'CHECK'

@@ -78,8 +78,32 @@ def preprocess_ud(target: Path) -> Path:
             out.append(line)
             continue
 
+        if line.startswith("let "):
+            rest = line[4:].strip()
+            if "=" in rest:
+                key, value = rest.split("=", 1)
+                key = key.strip()
+                value = value.strip()
+                value = value.replace("\\", "")
+                if (value.startswith(chr(34)) and value.endswith(chr(34))) or (value.startswith(chr(39)) and value.endswith(chr(39))):
+                    value = value[1:-1]
+                out.append(f'say "memory {_qbit_nova_quote(key)} = {_qbit_nova_quote(value)}"')
+            else:
+                out.append(f'say "memory {_qbit_nova_quote(rest)}"')
+            continue
+
         if line.startswith(("qbit ", "h ", "cnot ", "measure ", "state ", "prob ", "simulate ")):
             out.append(line)
+            continue
+
+        if line.startswith("when ") and line.endswith(":"):
+            condition = line[5:-1].strip()
+            out.append(f'say "when {_qbit_nova_quote(condition)} block loaded"')
+            continue
+
+        if line.startswith("adapter ") and line.endswith(":"):
+            adapter_name = line[8:-1].strip()
+            out.append(f'say "adapter {_qbit_nova_quote(adapter_name)} block loaded"')
             continue
 
         if line.endswith(":"):
@@ -95,7 +119,7 @@ def preprocess_ud(target: Path) -> Path:
             out.append(f'say "Title: {_qbit_nova_quote(title)}"')
             continue
 
-        if line.startswith(("mode ", "owner_approval ", "dangerous_action ")):
+        if line.startswith(("mode ", "owner_approval ", "dangerous_action ", "action ", "reply ", "requires ", "allow ", "deny ")):
             out.append(f'say "{_qbit_nova_quote(line)}"')
             continue
 
