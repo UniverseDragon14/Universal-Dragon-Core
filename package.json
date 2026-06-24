@@ -1,12 +1,8 @@
 {
-  "name": "react-example",
+  "name": "universal-dragon-qbit-nova",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.4.0",
   "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/UniverseDragon14/Universal-Dragon-Core.git"
-  },
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build",
