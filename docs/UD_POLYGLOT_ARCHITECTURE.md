@@ -1,17 +1,42 @@
-# Universal Dragon Polyglot Architecture
+# Universal Dragon QBIT NOVA Architecture
 
-Universal Dragon uses `.ud` as the top-level language.
+UD means Universal Dragon.
 
-Python, C, C++, Java, Kotlin, HTML, TypeScript, and other languages are not the main identity. They are internal adapters controlled by UD.
+Creator: Aslam.
+
+Universal Dragon uses QBIT NOVA as the top-level language.
+
+The source file extension is `.ud`.
+
+The user writes QBIT NOVA only.
+
+## Visible Source
+
+    nova universal_dragon
+    creator aslam
+    brain askutty
+
+    say "hello"
+
+    qbit dragon = |0>
+    h dragon
+    measure dragon
+
+## Hidden Runtime Targets
+
+- native runtime
+- web runtime
+- app runtime
+- system runtime
+- robot runtime
+- qbit runtime
 
 ## Rule
 
-User writes:
+The visible language is QBIT NOVA.
 
-```ud
-brain universal_dragon
-say "hello"
-use python as tool
-use html as page
-use typescript as app
-use c as core
+Other technologies are not the public identity. They are only hidden build/runtime targets if needed later.
+
+## Safety
+
+No delete, no attack, no credential access, and no external action without explicit owner approval.

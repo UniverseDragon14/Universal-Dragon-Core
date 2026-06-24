@@ -1,0 +1,16 @@
+nova universal_dragon
+creator aslam
+brain askutty
+
+say "QBIT NOVA language online"
+
+qbit dragon = |0>
+h dragon
+measure dragon
+
+screen main:
+  title "Universal Dragon"
+
+guard:
+  owner_approval required
+  dangerous_action deny

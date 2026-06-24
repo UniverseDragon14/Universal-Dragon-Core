@@ -1,6 +1,6 @@
 # QBIT NOVA Language Specification v0.1
 
-QBIT NOVA is the main Universal Dragon language.
+QBIT NOVA is a new Universal Dragon language.
 
 UD means Universal Dragon.
 
@@ -8,7 +8,9 @@ Creator: Aslam.
 
 The user writes `.ud` files only.
 
-Other technologies can exist inside the hidden runtime, compiler, or adapter layer, but they are not the public language identity.
+QBIT NOVA is not Python, not C, not C++, not Java, not HTML, and not TypeScript.
+
+Other technologies may exist later only as hidden compiler or runtime targets. They are not the public language identity.
 
 ## Core Identity
 
@@ -19,29 +21,33 @@ Other technologies can exist inside the hidden runtime, compiler, or adapter lay
 - Project identity: Universal Dragon
 - Brain identity: Askutty / NOVA
 
-## Core Rule
+## Core Syntax
 
-User writes QBIT NOVA only.
+    nova universal_dragon
+    creator aslam
+    brain askutty
 
-Example:
+    say "Universal Dragon online"
 
-```ud
-nova universal_dragon
-creator aslam
-brain askutty
+    qbit dragon = |0>
+    h dragon
+    measure dragon
 
-say "Universal Dragon online"
+    screen main:
+      title "Universal Dragon"
 
-qbit dragon = |0>
-h dragon
-measure dragon
+    guard:
+      owner_approval required
+      dangerous_action deny
 
-web screen:
-  title "Universal Dragon"
+## Language Layers
 
-native core:
-  mode fast_runtime
+1. QBIT NOVA source: `.ud`
+2. QBIT engine: state, decision, guard, memory
+3. Runtime targets: native, web, app, system, robot
+4. Guard layer: safety and owner approval
+5. Output layer: terminal, web, phone, robot, WhatsApp bridge
 
-guard:
-  owner_approval required
-  dangerous_action deny
+## Safety Rule
+
+No delete, no attack, no credential access, and no external action without explicit owner approval.
