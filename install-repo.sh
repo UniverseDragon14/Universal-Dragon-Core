@@ -2,7 +2,7 @@
 set -e
 
 ROOT="$HOME/ud-github-sync"
-BRANCH="nova-v1.3.5-dev"
+BRANCH="nova-v1.4.0-dev"
 REPO="https://github.com/UniverseDragon14/Universal-Dragon-Core.git"
 
 echo "🐉 Installing Universal Dragon NOVA..."
