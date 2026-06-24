@@ -27,15 +27,19 @@ jobs:
       - name: Run QBIT NOVA world source
         run: python3 tools/nova_cli.ud run examples/v2/qbit_nova_world.ud
 
+      - name: Run QBIT NOVA UD contract test
+        run: python3 tests/qbit_nova_ud_contract_check.py
+
       - name: Check Universal Dragon identity files
         run: |
-          python3 - <<'PY'
+          python3 - <<'CHECK'
           from pathlib import Path
           import json
 
           readme = Path("README.md").read_text(encoding="utf-8")
           meta = json.loads(Path("metadata.json").read_text(encoding="utf-8"))
           world = Path("examples/v2/qbit_nova_world.ud").read_text(encoding="utf-8")
+          grammar = Path("docs/QBIT_NOVA_GRAMMAR_CONTRACT_V0_2.md").read_text(encoding="utf-8")
 
           required_readme = [
               "UD means Universal Dragon",
@@ -60,12 +64,15 @@ jobs:
           assert "team askutty" in world
           assert "brain novakutty" in world
 
+          assert "QBIT NOVA Grammar Contract v0.2" in grammar
+          assert "dangerous_action deny" in grammar
+
           print("QBIT NOVA identity check passed")
-          PY
+          CHECK
 
       - name: Basic SEO/static check
         run: |
-          python3 - <<'PY'
+          python3 - <<'CHECK'
           from pathlib import Path
 
           html_files = [Path("index.html"), Path("public/index.html")]
@@ -88,4 +95,4 @@ jobs:
               print("SEO INFO: no index.html found for static SEO check")
 
           print("SEO/static check completed")
-          PY
+          CHECK
