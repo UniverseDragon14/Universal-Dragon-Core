@@ -1,0 +1,38 @@
+name: QBIT NOVA v0.8 Native Engine
+
+on:
+  push:
+    branches:
+      - nova-v1.4.0-dev
+  pull_request:
+    branches:
+      - nova-v1.4.0-dev
+
+jobs:
+  qbit-v08-native-engine:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Syntax check
+        run: |
+          python3 -m py_compile engine/qbit_nova_v07_engine.py
+          python3 -m py_compile engine/qbit_nova_v08_tokenizer.py
+          python3 -m py_compile engine/qbit_nova_v08_pipeline.py
+
+      - name: v0.7 native engine tests
+        run: |
+          python3 tests/qbit_nova_v07_ast_base_check.py
+          python3 tests/qbit_nova_v07_native_engine_check.py
+
+      - name: v0.8 tokenizer and pipeline tests
+        run: |
+          python3 tests/qbit_nova_v08_tokenizer_check.py
+          python3 tests/qbit_nova_v08_pipeline_check.py
