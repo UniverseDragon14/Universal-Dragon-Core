@@ -1,0 +1,31 @@
+@nova.v08
+@brain.novakutty
+@creator.aslam
+@project.universal_dragon
+@team.askutty
+@law.qbit_nova_identity_only
+@law.bootstrap_tool_only
+@law.safe_ui_manifest_builder_only
+@law.safe_generated_output_root_only
+@law.no_os_execution
+@law.no_delete_action
+@law.no_existing_ui_edit
+
+q.intent.ui_manifest_builder_v08
+q.package.qbit_nova_ui_manifest_builder
+q.target.safe_ui_manifest_metadata
+q.components.hero_text_input_button_panel_badge
+q.actions.ask_navigate_emit
+q.output_root.qbit_generated_v08
+
+g.intent:
+? check.ui_manifest_plan
++ backup.before_manifest_generation
++ validate.safe_component_allowlist
++ validate.safe_action_allowlist
++ validate.safe_output_root
+! rollback.on_blocked_manifest
++ learn.ui_manifest_metadata_only
++ emit.ui_manifest_builder_marker
+
+> QBIT_NOVA_UI_MANIFEST_BUILDER_V08
