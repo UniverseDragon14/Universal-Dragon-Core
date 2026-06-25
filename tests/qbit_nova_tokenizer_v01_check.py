@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import importlib.util
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOL = ROOT / "tools" / "qbit_nova_tokenizer_v01.py"
@@ -18,6 +19,7 @@ if not DOC.exists():
 
 spec = importlib.util.spec_from_file_location("qbit_nova_tokenizer_v01", TOOL)
 mod = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = mod
 spec.loader.exec_module(mod)
 
 source = SRC.read_text(encoding="utf-8")
