@@ -1,0 +1,20 @@
+@nova.v02
+@brain.novakutty
+@creator.aslam
+@project.universal_dragon
+@team.askutty
+@law.qbit_nova_identity_only
+@law.bootstrap_tool_only
+@law.safe_cli_pipeline_only
+
+q.intent.cli_launcher
+
+g.intent:
+? check.first
++ full_runner.before_output
++ qbc_runner.decode
++ validate.after_run
+! rollback.on_fail
++ learn.always
+
+> QBIT_NOVA_CLI_LAUNCHER_V02
