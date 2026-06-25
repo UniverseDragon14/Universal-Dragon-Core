@@ -1,0 +1,20 @@
+@nova.v03
+@brain.novakutty
+@creator.aslam
+@project.universal_dragon
+@team.askutty
+@law.qbit_nova_identity_only
+@law.bootstrap_tool_only
+@law.safe_qbc_file_write_only
+
+q.intent.qbc_file_writer
+
+g.intent:
+? check.first
++ qbc.build
++ qbc.write_file
++ validate.after_write
+! rollback.on_fail
++ learn.always
+
+> QBIT_NOVA_QBC_FILE_WRITER_V03
