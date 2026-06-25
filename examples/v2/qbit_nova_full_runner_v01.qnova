@@ -1,0 +1,21 @@
+qnova full_runner v0.1
+
+creator aslam
+project universal_dragon
+brain novakutty
+team askutty
+
+law qbit_nova_identity_only
+law bootstrap_tool_only
+law safe_pipeline_simulation_only
+
+qbit intent = safe_patch
+
+guard intent:
+    check first
+    backup before_change
+    validate after_change
+    rollback on_fail
+    learn always
+
+emit QBIT_NOVA_FULL_RUNNER_V01
