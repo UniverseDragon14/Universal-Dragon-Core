@@ -1,0 +1,25 @@
+@nova.v06
+@brain.novakutty
+@creator.aslam
+@project.universal_dragon
+@team.askutty
+@law.qbit_nova_identity_only
+@law.bootstrap_tool_only
+@law.safe_guard_approval_metadata_only
+@law.no_os_execution
+@law.no_delete_action
+
+q.intent.guard_approval_engine_v06
+q.package.qbit_nova_guard_approval
+q.target.safe_action_decision_layer
+
+g.intent:
+? check.guard_action_policy
++ backup.before_guard_validation
++ validate.allowed_core_actions
++ validate.needs_human_approval_actions
+! rollback.on_blocked_action
++ learn.safe_guard_metadata
++ emit.guard_marker
+
+> QBIT_NOVA_GUARD_APPROVAL_ENGINE_V06
