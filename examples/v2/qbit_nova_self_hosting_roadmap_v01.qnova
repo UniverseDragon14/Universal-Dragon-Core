@@ -1,0 +1,26 @@
+qnova self_hosting_roadmap v0.1
+
+creator aslam
+project universal_dragon
+brain novakutty
+team askutty
+
+law python_bootstrap_only
+law qbit_nova_identity_only
+law no_fake_independence
+law no_delete_old_proof
+
+stage 1 bootstrap_tokenizer
+stage 2 bootstrap_parser
+stage 3 bootstrap_ast
+stage 4 bootstrap_ir
+stage 5 bootstrap_qvm
+stage 6 qbit_bytecode
+stage 7 qnova_reads_qnova
+stage 8 qnova_compiles_qnova
+stage 9 remove_bootstrap
+stage 10 self_hosting_green
+
+goal qbit_nova_tools_written_in_qbit_nova
+
+emit QBIT_NOVA_SELF_HOSTING_ROADMAP_V01
