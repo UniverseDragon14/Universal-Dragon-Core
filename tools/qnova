@@ -24,11 +24,39 @@ def default_manifest_output_for(source: Path) -> Path:
     return ROOT / ".tmp" / "qnova-manifest-v03" / f"{source.stem}.qbc"
 
 
+def help_v04() -> int:
+    print("QBIT NOVA command help")
+    print("available commands: run, manifest, help, version")
+    print("source extensions: .qn, .qnova, .ud")
+    print("output extension: .qbc")
+    print("safety note: no OS install, no delete, bootstrap only")
+    return 0
+
+
+def version_v04() -> int:
+    print("QBIT_NOVA_QNOVA_COMMAND_POLISH_V04")
+    print("Current stage: v0.4.0")
+    print("Source: .qn / .qnova")
+    print("Bytecode: .qbc")
+    print("Mode: SAFE_BOOTSTRAP_COMMAND")
+    return 0
+
+
+def print_manifest_summary_v04(manifest: dict) -> None:
+    print("QBIT_NOVA_QNOVA_MANIFEST_SUMMARY_V04")
+    print(f"intent: {manifest.get('intent')}")
+    print(f"target: {manifest.get('target')}")
+    print(f"package: {manifest.get('package')}")
+    print(f"output_marker: {manifest.get('output_marker')}")
+    print(f"os_execution: {str(manifest.get('os_execution')).lower()}")
+    print(f"delete_action: {str(manifest.get('delete_action')).lower()}")
+
+
 def run_v03(argv: list[str]) -> int:
     import qbit_nova_qbc_file_runner_v03 as qbc_runner
 
     if len(argv) < 1:
-        print("Usage: qnova run <source.qnova|source.ud> [output.qbc]")
+        print("Usage: qnova run <source.qn|source.qnova|source.ud> [output.qbc]")
         return 2
 
     source = Path(argv[0])
@@ -97,6 +125,7 @@ def manifest_v03(argv: list[str]) -> int:
 
     print("QBIT_NOVA_QNOVA_MANIFEST_COMMAND_V03")
     print(json.dumps(wrapped, indent=2, ensure_ascii=False))
+    print_manifest_summary_v04(wrapped["manifest"])
     print("QBIT_NOVA_QNOVA_MANIFEST_COMMAND_V03_GREEN")
     return 0
 
@@ -107,7 +136,7 @@ def legacy(argv: list[str]) -> int:
         return completed.returncode
 
     print("Usage:")
-    print("  qnova run <source.qnova|source.ud> [output.qbc]")
+    print("  qnova run <source.qn|source.qnova|source.ud> [output.qbc]")
     print("  qnova manifest <source.qn|source.qnova|source.ud> [output.qbc]")
     print("Legacy qnova launcher backup not found.")
     return 2
@@ -117,12 +146,20 @@ def main(argv: list[str]) -> int:
     if not argv:
         print("QBIT NOVA qnova launcher")
         print("Usage:")
-        print("  qnova run <source.qnova|source.ud> [output.qbc]")
+        print("  qnova run <source.qn|source.qnova|source.ud> [output.qbc]")
         print("  qnova manifest <source.qn|source.qnova|source.ud> [output.qbc]")
+        print("  qnova help")
+        print("  qnova version")
         print("  qnova <legacy args>")
         return 0
 
     cmd = argv[0]
+
+    if cmd in {"help", "--help", "-h"}:
+        return help_v04()
+
+    if cmd in {"version", "--version", "-v"}:
+        return version_v04()
 
     if cmd in {"run", "qbc-run", "file-run"}:
         return run_v03(argv[1:])
