@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+set -eu
+
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+
+show_help() {
+  echo "QBIT NOVA CLI Launcher v0.2"
+  echo
+  echo "Usage:"
+  echo "  ./tools/qnova <file.qnova|file.ud>"
+  echo "  ./tools/qnova run <file.qnova|file.ud>"
+  echo
+  echo "Mode: SAFE CLI PIPELINE"
+}
+
+if [ "$#" -eq 0 ]; then
+  show_help
+  exit 2
+fi
+
+if [ "$1" = "help" ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+  show_help
+  exit 0
+fi
+
+if [ "$1" = "run" ]; then
+  shift
+fi
+
+if [ "$#" -eq 0 ]; then
+  echo "QBIT NOVA error: source file missing"
+  show_help
+  exit 2
+fi
+
+SOURCE="$1"
+
+if [ ! -f "$SOURCE" ]; then
+  echo "QBIT NOVA error: file not found: $SOURCE"
+  exit 1
+fi
+
+python3 "$SCRIPT_DIR/qbit_nova_syntax_v02.py" "$SOURCE"

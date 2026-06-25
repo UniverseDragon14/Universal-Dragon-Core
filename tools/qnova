@@ -1,44 +1,89 @@
-#!/usr/bin/env sh
-set -eu
+#!/usr/bin/env python3
+from __future__ import annotations
 
-SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
 
-show_help() {
-  echo "QBIT NOVA CLI Launcher v0.2"
-  echo
-  echo "Usage:"
-  echo "  ./tools/qnova <file.qnova|file.ud>"
-  echo "  ./tools/qnova run <file.qnova|file.ud>"
-  echo
-  echo "Mode: SAFE CLI PIPELINE"
-}
+TOOLS_DIR = Path(__file__).resolve().parent
+ROOT = TOOLS_DIR.parent
 
-if [ "$#" -eq 0 ]; then
-  show_help
-  exit 2
-fi
+if str(TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, str(TOOLS_DIR))
 
-if [ "$1" = "help" ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-  show_help
-  exit 0
-fi
+LEGACY = TOOLS_DIR / "qnova.backup.before-run-v03"
 
-if [ "$1" = "run" ]; then
-  shift
-fi
 
-if [ "$#" -eq 0 ]; then
-  echo "QBIT NOVA error: source file missing"
-  show_help
-  exit 2
-fi
+def default_output_for(source: Path) -> Path:
+    return ROOT / ".tmp" / "qnova-run-v03" / f"{source.stem}.qbc"
 
-SOURCE="$1"
 
-if [ ! -f "$SOURCE" ]; then
-  echo "QBIT NOVA error: file not found: $SOURCE"
-  exit 1
-fi
+def run_v03(argv: list[str]) -> int:
+    import qbit_nova_qbc_file_runner_v03 as qbc_runner
 
-python3 "$SCRIPT_DIR/qbit_nova_syntax_v02.py" "$SOURCE"
+    if len(argv) < 1:
+        print("Usage: qnova run <source.qnova|source.ud> [output.qbc]")
+        return 2
+
+    source = Path(argv[0])
+    output = Path(argv[1]) if len(argv) >= 2 else default_output_for(source)
+
+    try:
+        result = qbc_runner.run_qbc_file(source, output)
+    except Exception as e:
+        print("QBIT_NOVA_QNOVA_RUN_COMMAND_V03_ERROR")
+        print(str(e))
+        return 1
+
+    wrapped = {
+        "marker": "QBIT_NOVA_QNOVA_RUN_COMMAND_V03",
+        "type": "QNOVARunCommand",
+        "mode": "SAFE_QNOVA_RUN_COMMAND",
+        "success": True,
+        "source": str(source),
+        "qbc": str(output),
+        "runner_marker": result.get("marker"),
+        "writer_marker": result.get("writer_marker"),
+        "loader_marker": result.get("loader_marker"),
+        "bytecode_runner_marker": result.get("runner_marker"),
+        "decoded_output": result.get("decoded_output"),
+        "output": "QBIT_NOVA_QNOVA_RUN_COMMAND_V03",
+    }
+
+    print("QBIT_NOVA_QNOVA_RUN_COMMAND_V03")
+    print(json.dumps(wrapped, indent=2, ensure_ascii=False))
+    print("QBIT_NOVA_QNOVA_RUN_COMMAND_V03_GREEN")
+    return 0
+
+
+def legacy(argv: list[str]) -> int:
+    if LEGACY.exists():
+        completed = subprocess.run([str(LEGACY), *argv])
+        return completed.returncode
+
+    print("Usage:")
+    print("  qnova run <source.qnova|source.ud> [output.qbc]")
+    print("Legacy qnova launcher backup not found.")
+    return 2
+
+
+def main(argv: list[str]) -> int:
+    if not argv:
+        print("QBIT NOVA qnova launcher")
+        print("Usage:")
+        print("  qnova run <source.qnova|source.ud> [output.qbc]")
+        print("  qnova <legacy args>")
+        return 0
+
+    cmd = argv[0]
+
+    if cmd in {"run", "qbc-run", "file-run"}:
+        return run_v03(argv[1:])
+
+    return legacy(argv)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))
