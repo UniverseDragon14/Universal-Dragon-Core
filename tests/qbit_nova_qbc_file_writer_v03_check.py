@@ -47,6 +47,9 @@ for opcode in ["01", "10", "11", "20", "30", "31", "32", "33", "34", "35", "36",
     if opcode not in qbc_text.split():
         raise SystemExit(f"MISSING OPCODE IN QBC FILE: {opcode}")
 
+if "FF" in qbc_text.split():
+    raise SystemExit("UNKNOWN OPCODE FF FOUND IN QBC FILE")
+
 qbc_json = json.loads(Path(result["json"]).read_text(encoding="utf-8"))
 if qbc_json.get("marker") != "QBIT_NOVA_QBC_V01":
     raise SystemExit("BAD QBC JSON MARKER")

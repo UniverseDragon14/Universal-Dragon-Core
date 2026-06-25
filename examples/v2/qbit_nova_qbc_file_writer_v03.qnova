@@ -11,8 +11,7 @@ q.intent.qbc_file_writer
 
 g.intent:
 ? check.first
-+ qbc.build
-+ qbc.write_file
++ backup.before_write
 + validate.after_write
 ! rollback.on_fail
 + learn.always
