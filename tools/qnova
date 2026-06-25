@@ -20,6 +20,10 @@ def default_output_for(source: Path) -> Path:
     return ROOT / ".tmp" / "qnova-run-v03" / f"{source.stem}.qbc"
 
 
+def default_manifest_output_for(source: Path) -> Path:
+    return ROOT / ".tmp" / "qnova-manifest-v03" / f"{source.stem}.qbc"
+
+
 def run_v03(argv: list[str]) -> int:
     import qbit_nova_qbc_file_runner_v03 as qbc_runner
 
@@ -58,6 +62,45 @@ def run_v03(argv: list[str]) -> int:
     return 0
 
 
+def manifest_v03(argv: list[str]) -> int:
+    import qbit_nova_qn_manifest_runner_v03 as manifest_runner
+
+    if len(argv) < 1:
+        print("Usage: qnova manifest <source.qn|source.qnova|source.ud> [output.qbc]")
+        return 2
+
+    source = Path(argv[0])
+    output = Path(argv[1]) if len(argv) >= 2 else default_manifest_output_for(source)
+
+    try:
+        result = manifest_runner.run_manifest(source, output)
+    except Exception as e:
+        print("QBIT_NOVA_QNOVA_MANIFEST_COMMAND_V03_ERROR")
+        print(str(e))
+        return 1
+
+    wrapped = {
+        "marker": "QBIT_NOVA_QNOVA_MANIFEST_COMMAND_V03",
+        "type": "QNOVAManifestCommand",
+        "mode": result.get("mode"),
+        "success": True,
+        "source": str(source),
+        "qbc": str(output),
+        "runner_marker": result.get("marker"),
+        "writer_marker": result.get("writer_marker"),
+        "loader_marker": result.get("loader_marker"),
+        "bytecode_runner_marker": result.get("bytecode_runner_marker"),
+        "decoded_output": result.get("decoded_output"),
+        "manifest": result.get("manifest"),
+        "output": "QBIT_NOVA_QNOVA_MANIFEST_COMMAND_V03",
+    }
+
+    print("QBIT_NOVA_QNOVA_MANIFEST_COMMAND_V03")
+    print(json.dumps(wrapped, indent=2, ensure_ascii=False))
+    print("QBIT_NOVA_QNOVA_MANIFEST_COMMAND_V03_GREEN")
+    return 0
+
+
 def legacy(argv: list[str]) -> int:
     if LEGACY.exists():
         completed = subprocess.run([str(LEGACY), *argv])
@@ -65,6 +108,7 @@ def legacy(argv: list[str]) -> int:
 
     print("Usage:")
     print("  qnova run <source.qnova|source.ud> [output.qbc]")
+    print("  qnova manifest <source.qn|source.qnova|source.ud> [output.qbc]")
     print("Legacy qnova launcher backup not found.")
     return 2
 
@@ -74,6 +118,7 @@ def main(argv: list[str]) -> int:
         print("QBIT NOVA qnova launcher")
         print("Usage:")
         print("  qnova run <source.qnova|source.ud> [output.qbc]")
+        print("  qnova manifest <source.qn|source.qnova|source.ud> [output.qbc]")
         print("  qnova <legacy args>")
         return 0
 
@@ -81,6 +126,9 @@ def main(argv: list[str]) -> int:
 
     if cmd in {"run", "qbc-run", "file-run"}:
         return run_v03(argv[1:])
+
+    if cmd == "manifest":
+        return manifest_v03(argv[1:])
 
     return legacy(argv)
 
