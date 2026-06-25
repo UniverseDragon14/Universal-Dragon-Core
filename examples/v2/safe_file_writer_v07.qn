@@ -1,0 +1,26 @@
+@nova.v07
+@brain.novakutty
+@creator.aslam
+@project.universal_dragon
+@team.askutty
+@law.qbit_nova_identity_only
+@law.bootstrap_tool_only
+@law.safe_file_writer_metadata_only
+@law.safe_generated_output_root_only
+@law.no_os_execution
+@law.no_delete_action
+
+q.intent.safe_file_writer_v07
+q.package.qbit_nova_safe_file_writer
+q.target.safe_generated_output_layer
+
+g.intent:
+? check.safe_output_root
++ backup.before_safe_generation
++ validate.guard_approval_required
++ validate.path_policy
+! rollback.on_blocked_generation
++ learn.safe_file_write_metadata
++ emit.safe_file_writer_marker
+
+> QBIT_NOVA_SAFE_FILE_WRITER_V07
