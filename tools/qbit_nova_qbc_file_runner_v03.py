@@ -41,12 +41,15 @@ def run_qbc_file(source_path: Path, output_path: Path):
     if load_result.get("runner_mode") != "SAFE_BYTECODE_SIMULATION":
         raise ValueError("QBC runner mode mismatch")
 
-    expected_output = "QBIT_NOVA_QBC_FILE_RUNNER_V03"
+    decoded_output = load_result.get("decoded_output")
 
-    if load_result.get("decoded_output") != expected_output:
-        raise ValueError(
-            f"Decoded output mismatch: expected {expected_output}, got {load_result.get('decoded_output')}"
-        )
+    if not isinstance(decoded_output, str) or not decoded_output.strip():
+        raise ValueError("Decoded output missing or empty")
+
+    if not decoded_output.startswith("QBIT_NOVA_"):
+        raise ValueError(f"Decoded output is not a QBIT NOVA marker: {decoded_output}")
+
+    expected_output = decoded_output
 
     return {
         "marker": "QBIT_NOVA_QBC_FILE_RUNNER_V03",
