@@ -1,0 +1,21 @@
+qnova mission_lock v0.1
+
+creator aslam
+project universal_dragon
+brain novakutty
+team askutty
+
+law understand_typo_meaning
+law no_delete_first
+law backup_before_change
+law bootstrap_tool_only
+law qbit_nova_own_language
+
+device current = huawei_pura70_termux
+device support = iphone_16_pro_max
+device later = raspberry_pi5
+
+chain dna tokenizer parser
+next ast
+
+emit QBIT_NOVA_MISSION_LOCK_V01
