@@ -1,0 +1,19 @@
+@nova.v02
+@brain.novakutty
+@creator.aslam
+@project.universal_dragon
+@team.askutty
+@law.qbit_nova_identity_only
+@law.bootstrap_tool_only
+@law.safe_symbolic_syntax_only
+
+q.intent.safe_patch
+
+g.intent:
+? check.first
++ backup.before_change
++ validate.after_change
+! rollback.on_fail
++ learn.always
+
+> QBIT_NOVA_SYNTAX_V02
