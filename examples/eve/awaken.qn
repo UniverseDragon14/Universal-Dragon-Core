@@ -1,0 +1,20 @@
+@nova.v05
+@brain.novakutty
+@creator.aslam
+@project.universal_dragon
+@team.askutty
+@law.qbit_nova_identity_only
+@law.bootstrap_tool_only
+@law.safe_core_action_meaning_library_only
+
+q.intent.core_action_library_v05
+q.package.qbit_nova_core_actions
+
+g.intent:
+? check.first
++ backup.before_validate
++ validate.known_actions
+! rollback.on_fail
++ learn.safe_action_meaning
+
+> QBIT_NOVA_CORE_ACTION_LIBRARY_V05

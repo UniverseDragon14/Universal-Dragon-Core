@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# =============================================================================
+#   E V E   —   Universal Dragon master command   ·   Forged by Aslam
+# -----------------------------------------------------------------------------
+#   Runs the same in Termux (Android) and the terminal (Pi5/glibc).
+#   One command to awaken the whole world:   ./eve mythos
+#
+#   Built on Aslam's QBIT NOVA language (quantum-level, SAFE_BOOTSTRAP) and the
+#   Carry-On core. Nothing here runs destructive OS actions — the design is
+#   safe-by-default and everything routes through Nova Guard.
+# =============================================================================
+set -euo pipefail
+
+EVE_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CORE="$EVE_HOME/eve-core"
+
+# shellcheck source=/dev/null
+. "$CORE/env.sh"
+. "$CORE/banner.sh"
+. "$CORE/doctor.sh"
+. "$CORE/run.sh"
+. "$CORE/guard.sh"
+. "$CORE/stack.sh"
+. "$CORE/mythos.sh"
+
+eve_help() {
+  eve_banner
+  cat >&2 <<EOF
+${C_B}USAGE${C_RESET}   ./eve <command> [args]
+
+${C_B}WORLD${C_RESET}
+  mythos [--boot]     Awaken the whole world (add --boot to start live daemons)
+  doctor              Check every subsystem's readiness
+  status              Show which daemons are running
+  down                Stop every daemon
+
+${C_B}QBIT NOVA LANGUAGE${C_RESET}
+  run <file>          Run a QBIT NOVA program (.qn/.qnova/.ud)
+  qbc <file>          Compile-inspect a program (tokens/ast/ir/qbc counts)
+  guard <action>      Ask Nova Guard: allowed / needs_approval / blocked
+
+${C_B}CARRY-ON CORE${C_RESET}
+  gateway [start|stop]    Authenticated local command gateway
+  whatsapp [start|stop]   WhatsApp voice engine (+ Node bridge)
+  media <args...>         Media pipeline (e.g. ./eve media probe in.mp4)
+
+${C_B}SETUP${C_RESET}
+  install-cli         Symlink 'eve' into PATH so you can run it anywhere
+  version             Print version
+
+${C_DIM}Tip: on Termux keep it alive with:  nohup ./eve mythos --boot >~/eve.log 2>&1 & disown${C_RESET}
+EOF
+}
+
+eve_install_cli() {
+  local prefix bindir
+  if eve_is_termux; then prefix="${PREFIX:-/data/data/com.termux/files/usr}"; bindir="$prefix/bin"
+  else bindir="${HOME}/.local/bin"; fi
+  mkdir -p "$bindir"
+  ln -sf "$EVE_HOME/eve" "$bindir/eve"
+  eve_ok "Linked: $bindir/eve -> $EVE_HOME/eve"
+  case ":$PATH:" in *":$bindir:"*) : ;; *) eve_warn "Add to PATH:  export PATH=\"$bindir:\$PATH\"";; esac
+  eve_info "Now just type:  eve mythos"
+}
+
+main() {
+  local cmd="${1:-help}"; shift || true
+  case "$cmd" in
+    mythos)     eve_cmd_mythos "$@" ;;
+    doctor)     eve_cmd_doctor ;;
+    status)     eve_cmd_status ;;
+    down)       eve_cmd_down ;;
+    run)        eve_cmd_run "$@" ;;
+    qbc)        eve_cmd_qbc "$@" ;;
+    guard)      eve_cmd_guard "$@" ;;
+    gateway)    eve_cmd_gateway "$@" ;;
+    whatsapp)   eve_cmd_whatsapp "$@" ;;
+    media)      eve_cmd_media "$@" ;;
+    install-cli) eve_install_cli ;;
+    version|-v|--version) echo "EVE v$EVE_VERSION (Universal Dragon · QBIT NOVA)" ;;
+    help|-h|--help) eve_help ;;
+    *) eve_err "unknown command: $cmd"; eve_help; exit 2 ;;
+  esac
+}
+main "$@"
