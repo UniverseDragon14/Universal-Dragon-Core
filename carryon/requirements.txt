@@ -1,0 +1,18 @@
+# Carry-On core — Python deps. Everything here is OPTIONAL per backend; the
+# engine boots with zero extras using the stub/echo backends. Install only what
+# your chosen backends need.
+
+# --- Speech-to-Text (pick one) ---
+# faster-whisper        # CARRYON_STT_BACKEND=faster_whisper (Pi5/desktop)
+# (whisper.cpp is a native binary, not pip — build separately for Termux/ARM64)
+
+# --- Text-to-Speech (pick one) ---
+# piper-tts             # CARRYON_TTS_BACKEND=piper
+# (espeak-ng is a system package: `pkg install espeak` / `apt install espeak-ng`)
+
+# --- Media pipeline (adaptive contrast only) ---
+# opencv-python-headless # for carryon.media_pipeline.opencv_ops
+# numpy
+
+# ffmpeg/ffprobe are system binaries (pkg install ffmpeg / apt install ffmpeg).
+# The gateway, spool engine, and ffmpeg ops use only the Python standard library.

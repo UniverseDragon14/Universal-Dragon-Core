@@ -1,0 +1,18 @@
+# Secrets & local config
+.env
+*.key
+bridge/auth/
+
+# Node
+whatsapp_voice/bridge/node_modules/
+
+# Runtime spool contents (keep the dirs, drop the data)
+spool/whatsapp/inbox/*
+spool/whatsapp/outbox/*
+spool/whatsapp/media/*
+spool/whatsapp/work/*
+!spool/whatsapp/**/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
