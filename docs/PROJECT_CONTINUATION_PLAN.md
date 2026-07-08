@@ -2,7 +2,29 @@
 
 Date: 2026-07-08
 Owner: Aslam
+Official public identity: Universal DRAGON Aslam
 Project family: Universal Dragon / NOVA / EVE / UDOS / QBIT NOVA
+
+## Branding Lock
+
+Use this public identity consistently:
+
+```text
+Universal DRAGON Aslam
+```
+
+Meaning:
+
+```text
+Universal DRAGON = main project identity
+Aslam = creator / owner / architect
+NOVA = stable brain direction
+EVE = assistant and app-builder layer
+UDOS = assistant-first operating/control layer concept
+QBIT NOVA = language / core engine direction
+```
+
+Do not split this into random new project names unless there is a clear reason.
 
 ## Decision
 
