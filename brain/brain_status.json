@@ -1,0 +1,17 @@
+{
+  "project": "Universal Dragon",
+  "creator": "Aslam",
+  "stable_brain": "NOVA",
+  "interface_layer": "EVE",
+  "engine_support": "QBIT NOVA C",
+  "version": "V5.2.3 FINAL LOCK",
+  "status": "brain_continue_active",
+  "priority": "clean brain first",
+  "rule": "observe_remember_think_ask_approval_act_log_rollback",
+  "drivers": {
+    "chatgpt_fix": "later",
+    "photo_video_detail": "later",
+    "whatsapp": "later",
+    "robot_hardware": "later"
+  }
+}
