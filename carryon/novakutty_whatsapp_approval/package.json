@@ -1,0 +1,32 @@
+{
+  "name": "novakutty-whatsapp-approval",
+  "version": "5.3.3",
+  "description": "Safe owner-approval layer for Novakutty WhatsApp runtime with strong brain integration",
+  "type": "commonjs",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "pm2-start": "pm2 start bot.js --name novakutty-whatsapp --watch --ignore-watch 'memory,audit.jsonl'",
+    "pm2-stop": "pm2 stop novakutty-whatsapp",
+    "pm2-restart": "pm2 restart novakutty-whatsapp",
+    "pm2-logs": "pm2 logs novakutty-whatsapp",
+    "test": "node -c bot.js && echo '✓ All syntax checks passed'"
+  },
+  "keywords": [
+    "whatsapp",
+    "nova",
+    "approval",
+    "safe",
+    "commonjs"
+  ],
+  "author": "Aslam",
+  "license": "MIT",
+  "dependencies": {
+    "whatsapp-web.js": "^1.18.4",
+    "qrcode-terminal": "^0.12.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
