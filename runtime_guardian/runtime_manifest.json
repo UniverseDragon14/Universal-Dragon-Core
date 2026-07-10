@@ -1,0 +1,136 @@
+{
+  "schema_version": 2,
+  "project": "Universal Dragon",
+  "mode": "observe_only",
+  "canonical_systemd": [
+    {
+      "id": "cloudflare-system",
+      "manager": "system",
+      "unit": "cloudflared.service",
+      "expected_enabled": true,
+      "max_restarts": 5,
+      "exec_contains": [
+        "/usr/bin/cloudflared",
+        "/etc/cloudflared/config.yml",
+        "tunnel run"
+      ],
+      "critical": true
+    },
+    {
+      "id": "nova-site",
+      "manager": "system",
+      "unit": "nova-site.service",
+      "expected_enabled": true,
+      "working_directory": "/home/aslam/universal_dragon/nova3/projects/nova_web_api",
+      "exec_contains": [
+        "app_systemmap_force:app",
+        "--port 5000"
+      ],
+      "port": 5000,
+      "max_restarts": 5,
+      "critical": true
+    },
+    {
+      "id": "ultimate-dragon",
+      "manager": "system",
+      "unit": "ultimate-dragon.service",
+      "expected_enabled": true,
+      "working_directory": "/home/aslam/ultimate-universaldragon",
+      "exec_contains": [
+        "http.server 8088",
+        "--bind 0.0.0.0"
+      ],
+      "port": 8088,
+      "http_url": "http://127.0.0.1:8088/",
+      "expected_http": [
+        200
+      ],
+      "max_restarts": 5,
+      "critical": true
+    },
+    {
+      "id": "eve-fire",
+      "manager": "user",
+      "unit": "eve-fire.service",
+      "expected_enabled": true,
+      "working_directory": "/home/aslam/universal_dragon/eve",
+      "exec_contains": [
+        "/home/aslam/universal_dragon/eve/eve_fire_ui/eve_fire_server.py"
+      ],
+      "port": 5058,
+      "http_url": "http://127.0.0.1:5058/",
+      "expected_http": [
+        200
+      ],
+      "max_restarts": 5,
+      "critical": true
+    },
+    {
+      "id": "eve-cloudflare",
+      "manager": "user",
+      "unit": "eve-cloudflared.service",
+      "expected_enabled": true,
+      "exec_contains": [
+        "/home/aslam/.cloudflared/config.yml",
+        "tunnel run eve-fire"
+      ],
+      "max_restarts": 5,
+      "critical": true
+    }
+  ],
+  "canonical_pm2": [
+    {
+      "id": "novakutty-whatsapp",
+      "name": "novakutty-whatsapp",
+      "expected_status": "online",
+      "expected_cwd": "/home/aslam/novakutty-whatsapp-approval",
+      "expected_script": "/home/aslam/novakutty-whatsapp-approval/bot.js",
+      "max_restarts": 5,
+      "critical": true
+    }
+  ],
+  "parked_systemd": [
+    {
+      "id": "duplicate-nova-web-api",
+      "manager": "system",
+      "unit": "nova-web-api.service",
+      "allow_missing": true
+    },
+    {
+      "id": "duplicate-udos-site",
+      "manager": "system",
+      "unit": "udos-site.service",
+      "allow_missing": true
+    },
+    {
+      "id": "legacy-eve-whatsapp",
+      "manager": "system",
+      "unit": "eve-whatsapp.service",
+      "allow_missing": true
+    },
+    {
+      "id": "duplicate-cloudflare-nova",
+      "manager": "user",
+      "unit": "cloudflared-nova.service",
+      "allow_missing": true
+    },
+    {
+      "id": "duplicate-ultimate-dragon-user",
+      "manager": "user",
+      "unit": "ultimate-dragon.service",
+      "allow_missing": true
+    }
+  ],
+  "process_contracts": [
+    {
+      "id": "cloudflared-connectors",
+      "process_name": "cloudflared",
+      "exact_count": 2,
+      "required_fragments": [
+        "/etc/cloudflared/config.yml tunnel run",
+        "/home/aslam/.cloudflared/config.yml tunnel run eve-fire"
+      ],
+      "critical": true
+    }
+  ]
+}
