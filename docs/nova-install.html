@@ -1,362 +1,352 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Universal Dragon NOVA Install</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Universal Dragon Install Commands</title>
+  <meta name="description" content="Official installation commands for QBIT NOVA C and the separate legacy Universal Dragon NOVA Termux runtime.">
+  <meta name="theme-color" content="#050805">
+  <meta name="author" content="Universal Dragon Aslam">
+  <link rel="canonical" href="https://install.universaldragon.com/">
+  <meta property="og:title" content="Universal Dragon Install Commands">
+  <meta property="og:description" content="Install QBIT NOVA C or the separate legacy NOVA Termux runtime.">
+  <meta property="og:url" content="https://install.universaldragon.com/">
+  <meta property="og:type" content="website">
   <style>
+    :root {
+      color-scheme: dark;
+      --bg: #020302;
+      --panel: rgba(5, 18, 7, 0.78);
+      --line: rgba(57, 255, 90, 0.30);
+      --green: #39ff5a;
+      --green-soft: #9dffae;
+      --text: #f3fff3;
+      --muted: #a9bea9;
+      --warning: #ffd36a;
+      --shadow: 0 0 42px rgba(57, 255, 90, 0.12);
+    }
+
     * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: radial-gradient(circle at top, #103b1e 0%, #050805 45%, #020302 100%);
-      color: #f3fff3;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(57, 255, 90, 0.13), transparent 28rem),
+        radial-gradient(circle at 90% 25%, rgba(64, 132, 255, 0.09), transparent 30rem),
+        linear-gradient(180deg, #020302, #071007 55%, #020302);
+      line-height: 1.6;
     }
+
+    a { color: inherit; }
+
     header {
-      padding: 22px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(54,255,92,.25);
       position: sticky;
       top: 0;
-      background: rgba(2,5,3,.85);
-      backdrop-filter: blur(12px);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px max(18px, calc((100vw - 1050px) / 2));
+      border-bottom: 1px solid var(--line);
+      background: rgba(2, 5, 3, 0.88);
+      backdrop-filter: blur(14px);
     }
+
     .logo {
-      font-size: 24px;
       font-weight: 900;
-      letter-spacing: 1px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
-    .logo span { color: #39ff5a; }
-    .btn {
-      padding: 12px 18px;
+
+    .logo span { color: var(--green); }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 9px 14px;
+      border: 1px solid var(--line);
       border-radius: 999px;
-      background: #39ff5a;
-      color: #021002;
+      background: rgba(255, 255, 255, 0.025);
+      color: var(--text);
+      font: inherit;
       font-weight: 800;
       text-decoration: none;
-      box-shadow: 0 0 25px rgba(57,255,90,.35);
+      cursor: pointer;
     }
+
+    .button.primary {
+      border-color: var(--green);
+      background: var(--green);
+      color: #021002;
+      box-shadow: 0 0 25px rgba(57, 255, 90, 0.25);
+    }
+
     main {
-      max-width: 1050px;
-      margin: auto;
-      padding: 55px 20px;
+      width: min(1050px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 54px 0 70px;
     }
+
+    .intro {
+      max-width: 830px;
+      margin-bottom: 28px;
+    }
+
     .tag {
-      display: inline-block;
-      padding: 10px 16px;
-      border: 1px solid #39ff5a;
-      color: #9dffae;
-      border-radius: 12px;
-      letter-spacing: 3px;
-      font-weight: 800;
-      font-size: 13px;
+      display: inline-flex;
+      padding: 8px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--green-soft);
+      background: rgba(57, 255, 90, 0.05);
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
+
     h1 {
-      font-size: clamp(46px, 9vw, 92px);
-      line-height: .95;
-      margin: 28px 0 20px;
+      margin: 18px 0 12px;
+      font-size: clamp(2.5rem, 8vw, 5.8rem);
+      line-height: 0.96;
+      letter-spacing: -0.055em;
     }
-    h1 span { color: #39ff5a; }
-    p {
-      color: #b8c8b8;
-      font-size: 20px;
-      line-height: 1.6;
-      max-width: 780px;
+
+    h1 span { color: var(--green); }
+
+    .intro p,
+    .note,
+    .command-copy {
+      color: var(--muted);
     }
-    .terminal {
-      margin-top: 35px;
-      background: #071007;
-      border: 1px solid rgba(57,255,90,.4);
-      border-radius: 22px;
-      overflow: hidden;
-      box-shadow: 0 0 45px rgba(57,255,90,.15);
-    }
-    .bar {
-      padding: 14px 18px;
-      background: #101a10;
-      color: #8dff9d;
-      font-weight: 800;
-      letter-spacing: 2px;
-      border-bottom: 1px solid rgba(57,255,90,.25);
-    }
-    pre {
+
+    .intro p {
       margin: 0;
-      padding: 22px;
-      overflow-x: auto;
-      font-size: 15px;
-      line-height: 1.55;
-      color: #eaffea;
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 16px;
-      margin-top: 35px;
+
+    .command-card {
+      margin-top: 18px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      scroll-margin-top: 88px;
     }
-    .card {
-      border: 1px solid rgba(57,255,90,.25);
-      background: rgba(5,18,7,.65);
-      border-radius: 18px;
+
+    .command-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .command-title {
+      margin: 0;
+      color: var(--green-soft);
+      font-size: 0.88rem;
+      font-weight: 900;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .command-body {
       padding: 20px;
     }
-    .card h3 {
-      margin-top: 0;
-      color: #39ff5a;
+
+    .command-body h2 {
+      margin: 0 0 8px;
+      font-size: clamp(1.7rem, 4vw, 2.7rem);
+      line-height: 1.05;
     }
-    .qbit-nova-hero {
-      margin: 20px;
-      overflow: hidden;
-      border: 1px solid rgba(57,255,90,.35);
-      border-radius: 18px;
-      background: #020503;
-      box-shadow: 0 0 35px rgba(57,255,90,.12);
+
+    .version {
+      display: inline-block;
+      margin: 2px 0 14px;
+      color: var(--warning);
+      font-size: 0.86rem;
+      font-weight: 850;
     }
-    .qbit-nova-hero img {
-      display: block;
-      width: 100%;
-      height: auto;
+
+    pre {
+      margin: 18px 0 0;
+      padding: 18px;
+      overflow-x: auto;
+      border: 1px solid rgba(57, 255, 90, 0.24);
+      border-radius: 16px;
+      background: #010302;
+      color: #eaffea;
+      font: 0.88rem/1.65 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
-    .qbit-nova-hero figcaption {
-      padding: 12px 16px;
-      color: #9dffae;
-      font-size: 14px;
-      line-height: 1.5;
-      text-align: center;
+
+    .note {
+      margin: 14px 0 0;
+      font-size: 0.92rem;
     }
+
+    .note strong { color: var(--green-soft); }
+
+    .boundary {
+      margin-top: 18px;
+      padding: 20px;
+      border: 1px solid rgba(255, 211, 106, 0.25);
+      border-radius: 20px;
+      background: rgba(255, 211, 106, 0.04);
+    }
+
+    .boundary h2 {
+      margin: 0 0 8px;
+      color: var(--warning);
+    }
+
+    .boundary p {
+      margin: 0;
+      color: var(--muted);
+    }
+
     footer {
-      text-align: center;
+      padding: 34px 18px;
+      border-top: 1px solid rgba(57, 255, 90, 0.18);
       color: #7f987f;
-      padding: 35px 20px;
-      border-top: 1px solid rgba(57,255,90,.18);
+      text-align: center;
+    }
+
+    @media (max-width: 620px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav { width: 100%; }
+      .nav .button { flex: 1; }
+      main { width: min(100% - 18px, 1050px); padding-top: 34px; }
+      .command-head { align-items: flex-start; }
     }
   </style>
-
-<!-- NOVA mobile copy polish v1 -->
-<style id="nova-mobile-copy-polish-v1">
-  pre, code {
-    white-space: pre-wrap !important;
-    overflow-wrap: anywhere !important;
-    word-break: break-word !important;
-  }
-
-  .nova-copy-panel {
-    margin: 18px 0;
-    border: 1px solid rgba(57,255,90,.55);
-    border-radius: 22px;
-    background: rgba(0,0,0,.38);
-    overflow: hidden;
-  }
-
-  .nova-copy-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 16px;
-    border-bottom: 1px solid rgba(57,255,90,.35);
-  }
-
-  .nova-copy-title {
-    color: #93ff9f;
-    font-weight: 800;
-    letter-spacing: .12em;
-    font-size: 13px;
-  }
-
-  .nova-copy-btn {
-    border: 0;
-    border-radius: 999px;
-    padding: 10px 14px;
-    background: #39ff5a;
-    color: #041307;
-    font-weight: 900;
-    cursor: pointer;
-  }
-
-  .nova-copy-code {
-    padding: 16px;
-    font-size: 14px;
-    line-height: 1.65;
-    max-width: 100%;
-  }
-</style>
-
-<!-- NOVA SEO identity layer v1 -->
-<title>Universal Dragon NOVA by Aslam | Termux Multi-Engine Runtime</title>
-<meta name="description" content="Universal Dragon NOVA by Aslam is a portable multi-engine tool-language runtime for Termux. It supports nova-core, qbit, Python, Bash, Node.js, SQLite, C, C++, Rust, and Java from one command interface.">
-<meta name="keywords" content="Universal Dragon, Universal Dragon Aslam, Aslam developer, Aslam system architect, Universal Dragon NOVA, NOVA Termux, Termux runtime, qbit engine, multi engine runtime, Universal Dragon Core, independent software architect, mobile developer tools">
-<meta name="author" content="Universal Dragon Aslam">
-<link rel="canonical" href="https://install.universaldragon.com/">
-
-<meta property="og:title" content="Universal Dragon NOVA by Aslam">
-<meta property="og:description" content="Portable multi-engine tool-language runtime for Termux with QBIT, Python, Bash, Node.js, SQLite, C, C++, Rust, and Java support.">
-<meta property="og:url" content="https://install.universaldragon.com/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Universal Dragon NOVA">
-
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Universal Dragon NOVA by Aslam">
-<meta name="twitter:description" content="Install NOVA, a Universal Dragon portable multi-engine runtime for Termux.">
-
-<script type="application/ld+json" id="nova-seo-jsonld-v1">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Person",
-      "@id": "https://install.universaldragon.com/#aslam",
-      "name": "Universal Dragon Aslam",
-      "alternateName": ["Aslam", "Universal Dragon", "Abdul Azees Mohamed Aslam"],
-      "jobTitle": "Independent Developer and System Architect",
-      "description": "Creator of Universal Dragon NOVA, a portable multi-engine runtime for Termux.",
-      "url": "https://install.universaldragon.com/"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "@id": "https://install.universaldragon.com/#nova",
-      "name": "Universal Dragon NOVA",
-      "alternateName": "NOVA",
-      "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "Android Termux",
-      "creator": {
-        "@id": "https://install.universaldragon.com/#aslam"
-      },
-      "description": "Universal Dragon NOVA is a portable multi-engine tool-language runtime for Termux supporting nova-core, qbit, Python, Bash, Node.js, SQLite, C, C++, Rust, and Java.",
-      "url": "https://install.universaldragon.com/"
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://install.universaldragon.com/#website",
-      "name": "Universal Dragon NOVA",
-      "url": "https://install.universaldragon.com/",
-      "description": "Official install page for Universal Dragon NOVA by Aslam."
-    }
-  ]
-}
-</script>
-<!-- /NOVA SEO identity layer v1 -->
-
 </head>
 <body>
   <header>
-    <div class="logo">UNIVERSAL DRAGON <span>NOVA</span></div>
-    <a class="btn" href="#install">Install</a>
+    <div class="logo">Universal Dragon <span>Install</span></div>
+    <nav class="nav" aria-label="Install navigation">
+      <a class="button" href="#qbit-nova-c">QBIT NOVA C</a>
+      <a class="button" href="#legacy-nova">Legacy NOVA</a>
+      <a class="button" href="https://qbit.universaldragon.com/">QBIT Project Site</a>
+    </nav>
   </header>
 
-<section class="nova-copy-panel" id="nova-copy-panel">
-  <div class="nova-copy-head">
-    <div class="nova-copy-title">COPY INSTALL COMMAND</div>
-    <button class="nova-copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('nova-install-cmd').innerText).then(()=>this.innerText='Copied ✅')">Copy</button>
-  </div>
-  <pre class="nova-copy-code" id="nova-install-cmd">pkg install curl -y
-curl -L https://raw.githubusercontent.com/UniverseDragon14/Universal-Dragon-Core/nova-v1.3.5-dev/install-repo.sh | bash
-
-pkg install nova
-nova version
-nova doctor</pre>
-</section>
-
-
   <main>
-    <div class="tag">TERMUX • QBIT • MULTI ENGINE</div>
+    <section class="intro">
+      <span class="tag">Commands only · Projects remain separate</span>
+      <h1>Install <span>Universal Dragon</span> runtimes.</h1>
+      <p>
+        QBIT NOVA C and the earlier NOVA Termux runtime use separate repositories,
+        commands and release tracks. Choose the runtime you actually intend to install.
+      </p>
+    </section>
 
-    <h1>Install <span>NOVA</span><br>in under 1 minute.</h1>
+    <section class="command-card" id="qbit-nova-c">
+      <div class="command-head">
+        <p class="command-title">QBIT NOVA C · Raspberry Pi / Debian Linux</p>
+        <button class="button primary" type="button" data-copy-target="qbit-install-command">Copy</button>
+      </div>
+      <div class="command-body">
+        <h2>Install QBIT NOVA C</h2>
+        <span class="version">v4.3 Tagged Release · Latest Main Runtime Verified</span>
+        <p class="command-copy">
+          This installs the current GitHub main runtime from a full clone so release tags
+          remain available to the verification chain.
+        </p>
+        <pre id="qbit-install-command">sudo apt update
+sudo apt install -y git build-essential
 
-    <p>
-      Universal Dragon NOVA is a portable multi-engine tool-language runtime for Termux.
-      It routes nova-core, qbit, python, bash, node, sqlite, C, C++, Rust, and Java from one command face.
-    </p>
+git clone https://github.com/UniverseDragon14/qbit-nova-c.git "$HOME/qbit-nova-c"
+cd "$HOME/qbit-nova-c"
 
-    <section class="terminal" id="install">
-      <div class="bar">ONE COMMAND INSTALL</div>
-      <pre>pkg install curl -y
+bash install.sh
+export PATH="$HOME/.local/bin:$PATH"
+qnova-demo</pre>
+        <p class="note">
+          <strong>Boundary:</strong> this installs a software Virtual QCPU runtime on classical hardware.
+          It does not convert the Raspberry Pi into physical quantum hardware.
+        </p>
+      </div>
+    </section>
+
+    <section class="command-card" id="legacy-nova">
+      <div class="command-head">
+        <p class="command-title">Legacy NOVA · Android Termux</p>
+        <button class="button primary" type="button" data-copy-target="nova-install-command">Copy</button>
+      </div>
+      <div class="command-body">
+        <h2>Install the existing NOVA runtime</h2>
+        <p class="command-copy">
+          The original NOVA Termux package remains available and is not merged with QBIT NOVA C.
+        </p>
+        <pre id="nova-install-command">pkg install curl -y
 curl -L https://raw.githubusercontent.com/UniverseDragon14/Universal-Dragon-Core/nova-v1.3.5-dev/install-repo.sh | bash
 
 pkg install nova
 nova version
 nova doctor</pre>
-    </section>
-
-    <div class="grid">
-      <div class="card">
-        <h3>✅ Portable Package</h3>
-        <p>Works through Termux package manager after NOVA repo is added.</p>
-      </div>
-      <div class="card">
-        <h3>⚛ QBIT Engine</h3>
-        <p>Run symbolic qbit commands using <b>nova run</b> or <b>nova qbit</b>.</p>
-      </div>
-      <div class="card">
-        <h3>🧠 Multi Engine</h3>
-        <p>Python, Bash, Node.js, SQLite, C, C++, Rust, and Java adapter status.</p>
-      </div>
-      <div class="card">
-        <h3>🐉 Mobile Field Lab</h3>
-        <p>Built from Termux, tested with fresh HOME simulation, doctor GREEN.</p>
-      </div>
-    </div>
-
-    <section class="terminal" id="qbit-nova-language">
-      <div class="bar">QBIT NOVA LANGUAGE • ACTIVE DEVELOPMENT</div>
-      <figure class="qbit-nova-hero">
-        <img
-          src="assets/qbit-nova-universal-dragon-global-system.jpg"
-          alt="QBIT NOVA Universal Dragon Global System artwork"
-          width="1000"
-          height="848"
-          loading="lazy"
-          decoding="async"
-        />
-        <figcaption>
-          Universal Dragon Global System · QBIT NOVA · Virtual QCPU · Raspberry Pi 5 · Approval-First Architecture
-        </figcaption>
-      </figure>
-      <div class="card" style="border: 0; border-radius: 0; background: transparent;">
-        <h3>🐉 Dedicated Language Project</h3>
-        <p>
-          QBIT NOVA Language is experimental, unfinished, and under active development.
-          The public repository currently contains the frozen C-implementation specification v0.1;
-          it does not yet provide a production compiler or runtime.
-        </p>
-        <p>
-          <a class="btn"
-             href="https://github.com/UniverseDragon14/qbit-nova-language"
-             target="_blank"
-             rel="noopener noreferrer">View Development Repository</a>
-        </p>
       </div>
     </section>
 
-    <section class="terminal">
-      <div class="bar">QBIT TEST OUTPUT</div>
-      <pre>nova run "$PREFIX/share/nova/examples/qbit_test.qnova"
-
-qbit dragon = |0&gt;
-dragon: |0&gt;=1.000+0.000j |1&gt;=0.000+0.000j
-h dragon
-dragon: |0&gt;=0.707+0.000j |1&gt;=0.707+0.000j
-measure dragon =&gt; 0
-dragon: |0&gt;=1.000+0.000j |1&gt;=0.000+0.000j</pre>
+    <section class="boundary" id="qbit-nova-language">
+      <h2>QBIT NOVA Language has no installer yet</h2>
+      <p>
+        QBIT NOVA Language is a separate experimental programming-language project.
+        Its frozen C-implementation specification v0.1 is available through
+        <a href="https://qbit.universaldragon.com/#qbit-nova-language">the QBIT project site</a>,
+        but a production compiler and runtime have not been published.
+      </p>
     </section>
-  <!-- NOVA visible identity profile v1 -->
-<section class="nova-copy-panel" id="universal-dragon-aslam-profile">
-  <div class="nova-copy-head">
-    <div class="nova-copy-title">UNIVERSAL DRAGON ASLAM</div>
-  </div>
-  <div class="nova-copy-code">
-    <p><strong>Universal Dragon Aslam</strong> is the creator of <strong>Universal Dragon NOVA</strong>, a portable multi-engine tool-language runtime built for Termux and mobile developer workflows.</p>
-    <p>NOVA connects nova-core, qbit, Python, Bash, Node.js, SQLite, C, C++, Rust, and Java through one command interface.</p>
-    <p>Identity keywords: Universal Dragon, Universal Dragon Aslam, Aslam developer, system architect, NOVA creator, NOVA Termux runtime, QBIT engine, Universal Dragon Core, and mobile development runtime.</p>
-  </div>
-</section>
-<!-- /NOVA visible identity profile v1 -->
-
-</main>
+  </main>
 
   <footer>
-    Universal Dragon NOVA • Built by Aslam • Termux Portable Public Package
+    Universal Dragon · Created by Aslam · Approval-First Architecture
   </footer>
+
+  <script>
+    document.querySelectorAll("[data-copy-target]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const target = document.getElementById(button.dataset.copyTarget);
+        if (!target) return;
+
+        const original = button.textContent;
+
+        try {
+          await navigator.clipboard.writeText(target.innerText);
+          button.textContent = "Copied ✓";
+        } catch {
+          button.textContent = "Select command";
+        }
+
+        window.setTimeout(() => {
+          button.textContent = original;
+        }, 1800);
+      });
+    });
+  </script>
 </body>
 </html>
