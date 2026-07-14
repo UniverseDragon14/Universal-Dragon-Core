@@ -1,5 +1,18 @@
 # Universal Dragon Core - QBIT NOVA
 
+<p align="center">
+  <img
+    src="docs/assets/qbit-nova-universal-dragon-global-system.jpg"
+    alt="QBIT NOVA Universal Dragon Global System"
+    width="900"
+  />
+</p>
+
+<p align="center">
+  <strong>Universal Dragon Global System</strong><br>
+  QBIT NOVA · Virtual QCPU · Raspberry Pi 5 · Approval-First Architecture
+</p>
+
 UD means Universal Dragon.
 
 Creator: Aslam
