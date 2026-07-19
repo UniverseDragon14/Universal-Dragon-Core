@@ -12,6 +12,7 @@ import { AutoCodeEngine } from './components/AutoCodeEngine';
 import { WhatsAppBypass } from './components/WhatsAppBypass';
 import { SystemLogs } from './components/SystemLogs';
 import { QuickActions } from './components/QuickActions';
+import { QbitNovaGame } from './components/QbitNovaGame';
 import { io } from 'socket.io-client';
 import { TelemetryData, MapPoint } from './types';
 import { MOCK_LOG_MESSAGES, MOCK_SYSTEM_EVENTS, MOCK_SYSTEM_ERRORS } from './constants';
@@ -130,8 +131,9 @@ export default function App() {
           </div>
         </div>
 
-        {/* Middle Column: Spatial Map, Terminal & Voice Assistant */}
+        {/* Middle Column: Qbit Nova Game, Spatial Map, Terminal & Voice Assistant */}
         <div className="lg:col-span-6 flex flex-col gap-6">
+          <QbitNovaGame />
           <div className="flex-1">
             <SpatialMap data={mapData} />
           </div>
@@ -163,6 +165,3 @@ export default function App() {
     </div>
   );
 }
-
-
-

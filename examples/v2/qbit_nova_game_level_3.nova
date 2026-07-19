@@ -1,0 +1,14 @@
+brain universal_dragon
+intent "teach programming through Qbit Nova game level 3"
+
+qbit nova = |0>
+h nova
+prob nova
+observe nova
+
+guard nova {
+  when 0 => say "QBIT_GAME_HINT: nova measured 0, retry the qbit step"
+  when 1 => say "QBIT_GAME_PASS: nova measured 1, Dragon Core can activate"
+}
+
+say "LESSON: command -> repeat -> condition -> qbit observe"
