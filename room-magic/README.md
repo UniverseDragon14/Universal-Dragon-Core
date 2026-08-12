@@ -10,7 +10,7 @@ This folder is the portable handoff for the Dragon Resonance vertical slice trac
 - `elevenlabs.env.example` — empty configuration template only. Real values must remain local.
 - `src/voice/voiceSoul.ts` — provider-independent Voice Soul planning contract in the main app.
 - `src/voice/elevenV3.ts` — Eleven v3 prompt renderer.
-- `server.ts` — server-side `/api/voice/status` and `/api/voice/speak` integration using `ELEVENLABS_API_KEY` and `ELEVENLABS_VOICE_ID` from the runtime environment.
+- `server.ts` — protected server-side `/api/voice/status` and `/api/voice/speak` integration. The billable speech endpoint is disabled unless a separate Dragon access token is configured.
 
 ## Safety boundary
 
@@ -37,7 +37,7 @@ chmod 700 \
 
 Without ElevenLabs credentials, the launcher still works and falls back to Android TTS.
 
-For expressive voice later, create this local-only file:
+For direct Termux expressive voice later, create this local-only file:
 
 ```text
 ~/.config/universal-dragon/secrets/elevenlabs.env
@@ -72,9 +72,24 @@ DRAGON_ROOM_MAGIC_V3=PASS
 
 If the expressive provider is not configured, `VOICE_PATH=ANDROID_TTS_FALLBACK` is expected and the rest of Room Magic still runs. The local generated WAV is a separate room-effect layer, not a speech fallback.
 
-## Server-side voice contract
+## Protected server-side voice contract
 
-`POST /api/voice/speak`
+The server runtime needs all four variables before the billable endpoint is enabled:
+
+```text
+ELEVENLABS_API_KEY=<server secret>
+ELEVENLABS_VOICE_ID=<saved Arabella voice id>
+ELEVENLABS_MODEL=eleven_v3
+DRAGON_VOICE_ACCESS_TOKEN=<separate strong bearer token>
+```
+
+`POST /api/voice/speak` requires:
+
+```text
+Authorization: Bearer <DRAGON_VOICE_ACCESS_TOKEN>
+```
+
+Body:
 
 ```json
 {
@@ -84,7 +99,7 @@ If the expressive provider is not configured, `VOICE_PATH=ANDROID_TTS_FALLBACK` 
 }
 ```
 
-The server converts the provider-neutral Voice Soul plan into Eleven v3 prompt text and returns MP3 audio. The voice ID is never returned by `/api/voice/status` or `/api/health`.
+The server converts the provider-neutral Voice Soul plan into Eleven v3 prompt text and returns MP3 audio. Only one server-side voice generation is admitted at a time. The provider key, access token, and voice ID are never returned by `/api/voice/status` or `/api/health`.
 
 ## Next integration gates
 
