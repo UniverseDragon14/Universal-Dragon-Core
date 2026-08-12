@@ -70,10 +70,12 @@ function clamp01(value: number): number {
 
 function cleanSpokenText(text: string): string {
   return text
-    .replace(/<think>[\s\S]*?<\/think>/gi, '')
-    .replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '')
-    .replace(/<analysis>[\s\S]*?<\/analysis>/gi, '')
-    .replace(/\[[^\]]{1,40}\]/g, '')
+    .replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi, '')
+    .replace(/<reasoning\b[^>]*>[\s\S]*?<\/reasoning>/gi, '')
+    .replace(/<analysis\b[^>]*>[\s\S]*?<\/analysis>/gi, '')
+    .replace(/<(?:think|reasoning|analysis)\b[^>]*>[\s\S]*$/i, '')
+    .replace(/<\/(?:think|reasoning|analysis)>/gi, '')
+    .replace(/\[[^\]]*\]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 1200);
@@ -82,19 +84,23 @@ function cleanSpokenText(text: string): string {
 function inferMood(text: string, context: DragonContext): DragonMood {
   const lower = text.toLowerCase();
 
-  if (context === 'ALERT' || /danger|warning|error|stop|critical/.test(lower)) {
+  if (context === 'ALERT' || /\b(?:danger|warning|error|stop|critical)\b/.test(lower)) {
     return 'SERIOUS';
   }
 
-  if (/whisper|quiet|softly|sleep|night/.test(lower)) {
+  if (context === 'WAKE') {
+    return 'PLAYFUL';
+  }
+
+  if (/\b(?:whisper|quiet|softly|sleep|night)\b/.test(lower)) {
     return 'WHISPER';
   }
 
-  if (/why|how|what|wonder|curious|think/.test(lower)) {
+  if (/\b(?:why|how|what|wonder|curious|think)\b/.test(lower)) {
     return 'CURIOUS';
   }
 
-  if (context === 'WAKE' || /wake|awaken|dragon resonance|hey dragon/.test(lower)) {
+  if (/\b(?:wake|awaken|dragon resonance|hey dragon)\b/.test(lower)) {
     return 'PLAYFUL';
   }
 
