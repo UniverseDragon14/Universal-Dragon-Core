@@ -60,19 +60,24 @@ export const DragonResonance: React.FC<DragonResonanceProps> = ({ open, onClose 
         return;
       }
 
-      const focusable: HTMLElement[] = Array.from(
-        dialog.querySelectorAll<HTMLElement>(
+      const focusable: HTMLElement[] = [];
+      dialog
+        .querySelectorAll(
           'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ),
-      ).filter((element) => element.offsetParent !== null);
+        )
+        .forEach((node) => {
+          if (node instanceof HTMLElement && node.offsetParent !== null) {
+            focusable.push(node);
+          }
+        });
 
       if (focusable.length === 0) {
         event.preventDefault();
         return;
       }
 
-      const first: HTMLElement = focusable[0];
-      const last: HTMLElement = focusable[focusable.length - 1];
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
       const active = document.activeElement;
 
       if (event.shiftKey && active === first) {
