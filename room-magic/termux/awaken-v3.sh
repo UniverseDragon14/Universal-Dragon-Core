@@ -6,6 +6,7 @@ RUN="${DRAGON_ROOM_MAGIC_RUNTIME:-$HOME/.dragon-magic-runtime}"
 PORT="${DRAGON_ROOM_MAGIC_PORT:-8765}"
 URL="http://127.0.0.1:${PORT}/awaken.html"
 SOUND="$LAB/dragon-awaken.wav"
+VOICE_ADAPTER="$LAB/voice-eleven-v3.sh"
 
 mkdir -p "$LAB" "$RUN"
 
@@ -78,11 +79,24 @@ best_effort termux-torch on
 sleep 0.22
 best_effort termux-torch off
 
-if command -v termux-tts-speak >/dev/null 2>&1; then
-  best_effort termux-tts-speak -s MUSIC -p 0.96 -r 0.88 "Dragon Resonance active."
-  log "VOICE_FALLBACK=ANDROID_TTS"
-else
-  log "VOICE_FALLBACK=UNAVAILABLE"
+VOICE_OK=0
+if [ -s "$VOICE_ADAPTER" ]; then
+  chmod 700 "$VOICE_ADAPTER" 2>/dev/null || true
+  if "$VOICE_ADAPTER" PLAYFUL "Heey, Aslam... you really woke me up again. Dragon Resonance is active."; then
+    VOICE_OK=1
+    log "VOICE_PATH=ELEVEN_V3"
+  else
+    log "VOICE_PATH=ELEVEN_V3_UNAVAILABLE"
+  fi
+fi
+
+if [ "$VOICE_OK" -eq 0 ]; then
+  if command -v termux-tts-speak >/dev/null 2>&1; then
+    best_effort termux-tts-speak -s MUSIC -p 0.96 -r 0.88 "Dragon Resonance active."
+    log "VOICE_PATH=ANDROID_TTS_FALLBACK"
+  else
+    log "VOICE_PATH=UNAVAILABLE"
+  fi
 fi
 
 log "ROOM_EFFECTS=BOUNDED"
