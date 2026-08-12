@@ -23,9 +23,9 @@
       radial-gradient(circle at 50% 47%, rgba(255,255,255,.035), transparent 43%),
       radial-gradient(circle at 50% 50%, transparent 0 46%, rgba(0,0,0,.58) 76%, #000 100%);
   }
-  .hud { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; padding: max(18px, env(safe-area-inset-top)) 18px max(22px, env(safe-area-inset-bottom)); }
+  .hud { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; padding: max(18px, env(safe-area-inset-top)) 18px max(22px, env(safe-area-inset-bottom)); overflow-y: auto; }
   .top { display: flex; justify-content: space-between; font: 600 9px/1.2 ui-monospace, monospace; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.26); }
-  .core { display: grid; place-items: center; pointer-events: none; }
+  .core { display: grid; place-items: center; min-height: 260px; pointer-events: none; }
   .title { text-align: center; transform: translateY(-1vh); }
   .dragon { font-size: clamp(25px, 7vw, 46px); font-weight: 600; letter-spacing: .38em; margin-right: -.38em; text-shadow: 0 0 18px rgba(210,230,255,.22); }
   .resonance { margin-top: 9px; font-size: clamp(11px, 3.1vw, 17px); font-weight: 600; letter-spacing: .34em; margin-right: -.34em; color: rgba(228,238,249,.61); }
@@ -35,11 +35,17 @@
   .moods { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; }
   .moods::-webkit-scrollbar { display: none; }
   button { border: 1px solid rgba(255,255,255,.1); background: rgba(0,0,0,.35); color: rgba(255,255,255,.42); border-radius: 999px; padding: 9px 12px; font: 700 9px/1 ui-monospace, monospace; letter-spacing: .12em; white-space: nowrap; }
+  button:focus-visible { outline: 2px solid rgba(225,238,255,.72); outline-offset: 2px; }
   button.active { color: white; border-color: rgba(220,235,255,.38); background: rgba(220,235,255,.08); }
   .bottom { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; margin-top: 11px; }
   .copy { min-width: 0; font: 500 10px/1.45 ui-monospace, monospace; color: rgba(255,255,255,.35); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #awaken { border-radius: 12px; color: white; border-color: rgba(225,238,255,.32); background: rgba(225,238,255,.075); padding: 12px 16px; letter-spacing: .18em; }
   #awaken.on { box-shadow: 0 0 24px rgba(180,215,255,.13); }
+  @media (max-height: 520px) {
+    .hud { grid-template-rows: auto minmax(200px, 1fr) auto; }
+    .core { min-height: 200px; }
+    .panel { margin-top: 10px; }
+  }
 </style>
 </head>
 <body>
@@ -57,10 +63,10 @@
       </div>
     </div>
     <div class="panel">
-      <div class="moods" id="moods"></div>
+      <div class="moods" id="moods" aria-label="Dragon mood"></div>
       <div class="bottom">
         <div class="copy" id="copy">Provider-neutral performance plan ready.</div>
-        <button id="awaken">AWAKEN</button>
+        <button type="button" id="awaken">AWAKEN</button>
       </div>
     </div>
   </div>
@@ -75,9 +81,12 @@
   const copyEl = document.getElementById('copy');
   const awakenBtn = document.getElementById('awaken');
   const moodsEl = document.getElementById('moods');
+  const reduceMotionQuery = matchMedia('(prefers-reduced-motion: reduce)');
   const moods = ['CALM','PLAYFUL','CURIOUS','SERIOUS','WHISPER'];
   let mood = 'PLAYFUL';
   let awakened = false;
+  let reduceMotion = reduceMotionQuery.matches;
+  let animationRunning = false;
   let w = 0, h = 0, dpr = 1, t = 0;
 
   const particles = Array.from({length: 54}, (_, i) => ({
@@ -94,16 +103,18 @@
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (reduceMotion) drawFrame();
   }
 
-  function draw() {
-    t += awakened ? 1.55 : 1;
+  function drawFrame() {
+    if (!reduceMotion) t += awakened ? 1.55 : 1;
     ctx.clearRect(0,0,w,h);
     const cx = w * .5, cy = h * .465;
     const base = Math.min(w, h) * .16;
 
     for (let i = 0; i < 8; i++) {
-      const r = base * (.72 + i * .205) * (1 + Math.sin(t*.018+i)*.006);
+      const pulse = reduceMotion ? 1 : (1 + Math.sin(t*.018+i)*.006);
+      const r = base * (.72 + i * .205) * pulse;
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI*2);
       ctx.strokeStyle = `rgba(218,232,249,${.72 - i*.055})`;
@@ -115,12 +126,13 @@
 
     ctx.shadowBlur = 0;
     const orbit = Math.min(w,h) * .47;
-    particles.forEach((p, i) => {
-      const a = p.a + t * p.s * (i % 2 ? 1 : -1);
+    const visibleParticles = reduceMotion ? particles.slice(0, 16) : particles;
+    visibleParticles.forEach((p, i) => {
+      const a = p.a + (reduceMotion ? 0 : t * p.s * (i % 2 ? 1 : -1));
       const rr = orbit * p.r;
       const x = cx + Math.cos(a) * rr;
       const y = cy + Math.sin(a) * rr * 1.12;
-      const alpha = .2 + .65 * (.5 + .5*Math.sin(t*.024+p.p));
+      const alpha = reduceMotion ? .42 : .2 + .65 * (.5 + .5*Math.sin(t*.024+p.p));
       const len = p.l * (awakened ? 1.25 : 1);
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -139,18 +151,41 @@
     glow.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle = glow;
     ctx.beginPath(); ctx.arc(cx,cy,base*.9,0,Math.PI*2); ctx.fill();
-    requestAnimationFrame(draw);
   }
 
-  function renderMoods() {
-    moodsEl.innerHTML = '';
-    moods.forEach(name => {
-      const b = document.createElement('button');
-      b.textContent = name;
-      b.className = name === mood ? 'active' : '';
-      b.onclick = () => { mood = name; stateEl.textContent = `VOICE SOUL · ${mood}`; renderMoods(); };
-      moodsEl.appendChild(b);
+  function animate() {
+    if (reduceMotion) {
+      animationRunning = false;
+      drawFrame();
+      return;
+    }
+
+    animationRunning = true;
+    drawFrame();
+    requestAnimationFrame(animate);
+  }
+
+  function updateMoodButtons() {
+    moodsEl.querySelectorAll('button').forEach(button => {
+      const selected = button.textContent === mood;
+      button.classList.toggle('active', selected);
+      button.setAttribute('aria-pressed', String(selected));
     });
+  }
+
+  function createMoodButtons() {
+    moods.forEach(name => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = name;
+      button.onclick = () => {
+        mood = name;
+        stateEl.textContent = `VOICE SOUL · ${mood}`;
+        updateMoodButtons();
+      };
+      moodsEl.appendChild(button);
+    });
+    updateMoodButtons();
   }
 
   window.dragonAwaken = () => {
@@ -159,16 +194,33 @@
     awakenBtn.textContent = 'ACTIVE';
     awakenBtn.classList.add('on');
     copyEl.textContent = `${mood} performance cue dispatched locally.`;
-    document.documentElement.animate(
-      [{filter:'brightness(1)'},{filter:'brightness(1.17)'},{filter:'brightness(1)'}],
-      {duration:720,easing:'ease-out'}
-    );
+
+    if (!reduceMotion) {
+      document.documentElement.animate(
+        [{filter:'brightness(1)'},{filter:'brightness(1.17)'},{filter:'brightness(1)'}],
+        {duration:720,easing:'ease-out'}
+      );
+    } else {
+      drawFrame();
+    }
+
     window.dispatchEvent(new CustomEvent('DRAGON_ROOM_MAGIC_PREVIEW', { detail: { mood } }));
   };
 
+  reduceMotionQuery.addEventListener?.('change', event => {
+    reduceMotion = event.matches;
+    if (reduceMotion) {
+      drawFrame();
+    } else if (!animationRunning) {
+      animate();
+    }
+  });
+
   awakenBtn.onclick = window.dragonAwaken;
   addEventListener('resize', resize, { passive: true });
-  resize(); renderMoods(); draw();
+  resize();
+  createMoodButtons();
+  animate();
 })();
 </script>
 </body>
