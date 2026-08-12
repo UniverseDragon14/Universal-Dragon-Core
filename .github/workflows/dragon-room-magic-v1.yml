@@ -57,9 +57,11 @@ jobs:
           test -s room-magic/termux/awaken.html
           test -s room-magic/termux/awaken-v3.sh
           test -s room-magic/termux/voice-eleven-v3.sh
+          test -s room-magic/termux/install-v1.sh
           test -s room-magic/elevenlabs.env.example
           bash -n room-magic/termux/awaken-v3.sh
           bash -n room-magic/termux/voice-eleven-v3.sh
+          bash -n room-magic/termux/install-v1.sh
           grep -q '>DRAGON<' room-magic/termux/awaken.html
           grep -q '>RESONANCE<' room-magic/termux/awaken.html
           grep -q 'dragonAwaken' room-magic/termux/awaken.html
@@ -70,3 +72,19 @@ jobs:
           grep -q 'voice_api_disabled' server.ts
           grep -q -- '--directory "$WEB_ROOT"' room-magic/termux/awaken-v3.sh
           echo 'TERMUX_PORTABLE_ASSETS=PASS'
+
+      - name: Prove Termux handoff installer
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/dragon-home"
+          export DRAGON_ROOM_MAGIC_HOME="$RUNNER_TEMP/dragon-target"
+          export DRAGON_ROOM_MAGIC_BACKUPS="$RUNNER_TEMP/dragon-backups"
+          mkdir -p "$HOME"
+          bash room-magic/termux/install-v1.sh | tee "$RUNNER_TEMP/install-proof.log"
+          grep -q '^SECRET_FILES_TOUCHED=NO$' "$RUNNER_TEMP/install-proof.log"
+          grep -q '^ROOM_MAGIC_HANDOFF_INSTALL=PASS$' "$RUNNER_TEMP/install-proof.log"
+          test -s "$DRAGON_ROOM_MAGIC_HOME/awaken.html"
+          test -x "$DRAGON_ROOM_MAGIC_HOME/awaken-v3.sh"
+          test -x "$DRAGON_ROOM_MAGIC_HOME/voice-eleven-v3.sh"
+          echo 'TERMUX_HANDOFF_PROOF=PASS'
