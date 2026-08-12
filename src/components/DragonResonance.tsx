@@ -54,10 +54,16 @@ export const DragonResonance: React.FC<DragonResonanceProps> = ({ open, onClose 
 
       if (event.key !== 'Tab') return;
 
-      const focusable = Array.from(
-        dialogRef.current?.querySelectorAll<HTMLElement>(
+      const dialog = dialogRef.current;
+      if (!dialog) {
+        event.preventDefault();
+        return;
+      }
+
+      const focusable: HTMLElement[] = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
           'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ) ?? [],
+        ),
       ).filter((element) => element.offsetParent !== null);
 
       if (focusable.length === 0) {
@@ -65,8 +71,8 @@ export const DragonResonance: React.FC<DragonResonanceProps> = ({ open, onClose 
         return;
       }
 
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+      const first: HTMLElement = focusable[0];
+      const last: HTMLElement = focusable[focusable.length - 1];
       const active = document.activeElement;
 
       if (event.shiftKey && active === first) {
