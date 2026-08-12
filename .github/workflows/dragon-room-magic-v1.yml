@@ -6,6 +6,10 @@ on:
       - feat/dragon-room-magic-voice-soul-v1
   pull_request:
     paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig*.json'
+      - 'vite.config.*'
       - 'server.ts'
       - 'src/components/DragonResonance.tsx'
       - 'src/components/QuickActions.tsx'
@@ -25,6 +29,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -59,4 +65,5 @@ jobs:
           grep -q 'dragonAwaken' room-magic/termux/awaken.html
           grep -q '^ELEVENLABS_API_KEY=$' room-magic/elevenlabs.env.example
           grep -q '^ELEVENLABS_VOICE_ID=$' room-magic/elevenlabs.env.example
+          grep -q -- '--directory "$WEB_ROOT"' room-magic/termux/awaken-v3.sh
           echo 'TERMUX_PORTABLE_ASSETS=PASS'
