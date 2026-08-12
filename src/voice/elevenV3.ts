@@ -9,7 +9,7 @@ const deliveryTags: Record<VoiceSoulPlan['performance']['delivery'], string> = {
 };
 
 const reactionTags: Record<VoiceSoulPlan['performance']['reactions'][number], string> = {
-  soft_breath: '[sighs]',
+  soft_breath: '[exhales]',
   soft_laugh: '[laughs softly]',
   sigh: '[sighs]',
   throat_clear: '[clears throat]',
