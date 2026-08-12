@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import http from "http";
 import mqtt from "mqtt";
 import path from "path";
+import { timingSafeEqual } from "crypto";
 import { fileURLToPath } from "url";
 import { planVoiceSoul, type DragonContext, type DragonMood } from "./src/voice/voiceSoul";
 import { renderElevenV3Prompt } from "./src/voice/elevenV3";
@@ -24,6 +25,28 @@ For risky actions, give a plan and ask for explicit yes/no approval.`;
 
 const DRAGON_MOODS = new Set<DragonMood>(["CALM", "PLAYFUL", "CURIOUS", "SERIOUS", "WHISPER"]);
 const DRAGON_CONTEXTS = new Set<DragonContext>(["WAKE", "CHAT", "ALERT"]);
+let voiceRequestInFlight = false;
+
+function safeTokenMatch(candidate: string, expected: string): boolean {
+  if (!candidate || !expected) return false;
+
+  const candidateBytes = Buffer.from(candidate, "utf8");
+  const expectedBytes = Buffer.from(expected, "utf8");
+
+  if (candidateBytes.length !== expectedBytes.length) return false;
+  return timingSafeEqual(candidateBytes, expectedBytes);
+}
+
+function authorizeVoiceRequest(req: express.Request): "ok" | "disabled" | "unauthorized" {
+  const expected = process.env.DRAGON_VOICE_ACCESS_TOKEN || "";
+  if (!expected) return "disabled";
+
+  const authorization = req.header("authorization") || "";
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
+  const candidate = match?.[1]?.trim() || "";
+
+  return safeTokenMatch(candidate, expected) ? "ok" : "unauthorized";
+}
 
 async function callOpenAICompatible(messages: ChatMessage[]) {
   const groqKey = process.env.GROQ_API_KEY || "";
@@ -195,7 +218,12 @@ async function startServer() {
       model: process.env.GROQ_API_KEY ? (process.env.GROQ_MODEL || "openai/gpt-oss-120b") : (process.env.OPENAI_MODEL || "gpt-4.1-mini"),
       voice: {
         provider: "elevenlabs",
-        configured: Boolean(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID),
+        configured: Boolean(
+          process.env.ELEVENLABS_API_KEY
+          && process.env.ELEVENLABS_VOICE_ID
+          && process.env.DRAGON_VOICE_ACCESS_TOKEN
+        ),
+        protected: true,
         model: process.env.ELEVENLABS_MODEL || "eleven_v3",
       },
     });
@@ -205,13 +233,35 @@ async function startServer() {
     res.json({
       ok: true,
       provider: "elevenlabs",
-      configured: Boolean(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID),
+      configured: Boolean(
+        process.env.ELEVENLABS_API_KEY
+        && process.env.ELEVENLABS_VOICE_ID
+        && process.env.DRAGON_VOICE_ACCESS_TOKEN
+      ),
+      protected: true,
       model: process.env.ELEVENLABS_MODEL || "eleven_v3",
       voice_id_exposed: false,
     });
   });
 
   app.post("/api/voice/speak", async (req, res) => {
+    const auth = authorizeVoiceRequest(req);
+
+    if (auth === "disabled") {
+      return res.status(503).json({ ok: false, error: "voice_api_disabled" });
+    }
+
+    if (auth === "unauthorized") {
+      res.setHeader("WWW-Authenticate", "Bearer");
+      return res.status(401).json({ ok: false, error: "unauthorized" });
+    }
+
+    if (voiceRequestInFlight) {
+      return res.status(429).json({ ok: false, error: "voice_busy" });
+    }
+
+    voiceRequestInFlight = true;
+
     try {
       const text = String(req.body?.text || "").trim().slice(0, 1200);
       const requestedMood = String(req.body?.mood || "PLAYFUL").toUpperCase() as DragonMood;
@@ -245,6 +295,8 @@ async function startServer() {
       const message = error?.name === "AbortError" ? "voice_provider_timeout" : "voice_generation_failed";
       console.error("Dragon voice error:", message);
       return res.status(502).json({ ok: false, error: message });
+    } finally {
+      voiceRequestInFlight = false;
     }
   });
 
@@ -296,7 +348,13 @@ async function startServer() {
     console.log(`🚀 Universal Dragon Server running on http://localhost:${PORT}`);
     console.log(`📡 MQTT Broker: ${MQTT_BROKER}`);
     console.log(`🧠 NOVA AI Provider: ${process.env.GROQ_API_KEY ? "Groq" : process.env.OPENAI_API_KEY ? "OpenAI" : "Missing key"}`);
-    console.log(`🎙️ Dragon Voice: ${process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID ? "ElevenLabs ready" : "Not configured"}`);
+    console.log(`🎙️ Dragon Voice: ${
+      process.env.ELEVENLABS_API_KEY
+      && process.env.ELEVENLABS_VOICE_ID
+      && process.env.DRAGON_VOICE_ACCESS_TOKEN
+        ? "ElevenLabs protected endpoint ready"
+        : "Not configured"
+    }`);
     console.log(`🔗 Socket.io: Active`);
   });
 }
