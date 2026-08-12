@@ -17,19 +17,6 @@ export const QuickActions: React.FC = () => {
 
   const actions = [
     {
-      id: 'resonance',
-      label: 'DRAGON RESONANCE',
-      icon: <Sparkles className="w-4 h-4" />,
-      color: 'text-slate-100',
-      bg: 'bg-slate-100/5',
-      border: 'border-slate-100/20',
-      hover: 'hover:bg-slate-100/10',
-      onClick: () => {
-        window.dispatchEvent(new CustomEvent('DRAGON_RESONANCE_OPEN'));
-        setIsOpen(false);
-      },
-    },
-    {
       id: 'emergency',
       label: 'EMERGENCY STOP',
       icon: <Power className="w-4 h-4" />,
@@ -40,6 +27,19 @@ export const QuickActions: React.FC = () => {
       onClick: () => {
         window.dispatchEvent(new CustomEvent('TRIGGER_7D_BREACH'));
         // In a real app, this would send a command to the robot.
+      },
+    },
+    {
+      id: 'resonance',
+      label: 'DRAGON RESONANCE',
+      icon: <Sparkles className="w-4 h-4" />,
+      color: 'text-slate-100',
+      bg: 'bg-slate-100/5',
+      border: 'border-slate-100/20',
+      hover: 'hover:bg-slate-100/10',
+      onClick: () => {
+        window.dispatchEvent(new CustomEvent('DRAGON_RESONANCE_OPEN'));
+        setIsOpen(false);
       },
     },
     {
