@@ -65,5 +65,8 @@ jobs:
           grep -q 'dragonAwaken' room-magic/termux/awaken.html
           grep -q '^ELEVENLABS_API_KEY=$' room-magic/elevenlabs.env.example
           grep -q '^ELEVENLABS_VOICE_ID=$' room-magic/elevenlabs.env.example
+          grep -q '^DRAGON_VOICE_ACCESS_TOKEN=$' room-magic/elevenlabs.env.example
+          grep -q 'authorizeVoiceRequest' server.ts
+          grep -q 'voice_api_disabled' server.ts
           grep -q -- '--directory "$WEB_ROOT"' room-magic/termux/awaken-v3.sh
           echo 'TERMUX_PORTABLE_ASSETS=PASS'
