@@ -7,6 +7,7 @@ This folder is the portable handoff for the Dragon Resonance vertical slice trac
 - `termux/awaken.html` — self-contained mobile Dragon Resonance visual with no external assets.
 - `termux/awaken-v3.sh` — bounded Huawei Termux launcher for visual, vibration, optional local room sound, torch pulses, expressive voice, and Android TTS fallback.
 - `termux/voice-eleven-v3.sh` — direct Eleven v3 Termux adapter. It reads credentials only from a local secret file and never prints them.
+- `termux/install-v1.sh` — safe handoff installer. It backs up existing Room Magic files, copies the new portable set atomically, preserves secret files, syntax-checks scripts, and creates the original procedural room sound only when it is missing.
 - `elevenlabs.env.example` — empty configuration template only. Real values must remain local.
 - `src/voice/voiceSoul.ts` — provider-independent Voice Soul planning contract in the main app.
 - `src/voice/elevenV3.ts` — Eleven v3 prompt renderer.
@@ -22,17 +23,25 @@ The Termux HTTP launcher serves a dedicated runtime directory containing only `a
 
 ## Huawei Termux handoff
 
-After cloning or downloading this repository, run the copy commands from the repository root:
+After checking out this branch on Huawei, install the tested portable files from the repository root:
 
 ```bash
-cd room-magic/termux
-mkdir -p "$HOME/dragon-room-magic-v1"
-cp awaken.html "$HOME/dragon-room-magic-v1/awaken.html"
-cp awaken-v3.sh "$HOME/dragon-room-magic-v1/awaken-v3.sh"
-cp voice-eleven-v3.sh "$HOME/dragon-room-magic-v1/voice-eleven-v3.sh"
-chmod 700 \
-  "$HOME/dragon-room-magic-v1/awaken-v3.sh" \
-  "$HOME/dragon-room-magic-v1/voice-eleven-v3.sh"
+bash room-magic/termux/install-v1.sh
+```
+
+Expected installer proof:
+
+```text
+SECRET_FILES_TOUCHED=NO
+ROOM_MAGIC_HANDOFF_INSTALL=PASS
+```
+
+If existing Room Magic files are present, the installer backs them up under `~/.dragon-magic-backups/<UTC timestamp>/` before replacement. It does not copy or modify ElevenLabs credentials.
+
+Then run:
+
+```bash
+"$HOME/dragon-room-magic-v1/awaken-v3.sh"
 ```
 
 Without ElevenLabs credentials, the launcher still works and falls back to Android TTS.
@@ -53,13 +62,7 @@ ELEVENLABS_MODEL=eleven_v3
 
 Protect it with mode `600`. Never commit it.
 
-Then run:
-
-```bash
-"$HOME/dragon-room-magic-v1/awaken-v3.sh"
-```
-
-Expected proof markers include:
+Expected Room Magic proof markers include:
 
 ```text
 HTTP_ASSET_IDENTITY=PASS
