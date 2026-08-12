@@ -50,5 +50,7 @@ jobs:
           test -s room-magic/termux/awaken.html
           test -s room-magic/termux/awaken-v3.sh
           bash -n room-magic/termux/awaken-v3.sh
-          grep -q 'DRAGON RESONANCE' room-magic/termux/awaken.html
+          grep -q '>DRAGON<' room-magic/termux/awaken.html
+          grep -q '>RESONANCE<' room-magic/termux/awaken.html
+          grep -q 'dragonAwaken' room-magic/termux/awaken.html
           echo 'TERMUX_PORTABLE_ASSETS=PASS'
