@@ -4,7 +4,10 @@ import { Server } from "socket.io";
 import http from "http";
 import mqtt from "mqtt";
 import path from "path";
+import { timingSafeEqual } from "crypto";
 import { fileURLToPath } from "url";
+import { planVoiceSoul, type DragonContext, type DragonMood } from "./src/voice/voiceSoul";
+import { renderElevenV3Prompt } from "./src/voice/elevenV3";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +22,31 @@ Speak in simple Tamil + Tanglish when useful.
 Be practical, safe, concise, and approval-first.
 Never ask for or expose API keys, tokens, private data, or passwords.
 For risky actions, give a plan and ask for explicit yes/no approval.`;
+
+const DRAGON_MOODS = new Set<DragonMood>(["CALM", "PLAYFUL", "CURIOUS", "SERIOUS", "WHISPER"]);
+const DRAGON_CONTEXTS = new Set<DragonContext>(["WAKE", "CHAT", "ALERT"]);
+let voiceRequestInFlight = false;
+
+function safeTokenMatch(candidate: string, expected: string): boolean {
+  if (!candidate || !expected) return false;
+
+  const candidateBytes = Buffer.from(candidate, "utf8");
+  const expectedBytes = Buffer.from(expected, "utf8");
+
+  if (candidateBytes.length !== expectedBytes.length) return false;
+  return timingSafeEqual(candidateBytes, expectedBytes);
+}
+
+function authorizeVoiceRequest(req: express.Request): "ok" | "disabled" | "unauthorized" {
+  const expected = process.env.DRAGON_VOICE_ACCESS_TOKEN || "";
+  if (!expected) return "disabled";
+
+  const authorization = req.header("authorization") || "";
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
+  const candidate = match?.[1]?.trim() || "";
+
+  return safeTokenMatch(candidate, expected) ? "ok" : "unauthorized";
+}
 
 async function callOpenAICompatible(messages: ChatMessage[]) {
   const groqKey = process.env.GROQ_API_KEY || "";
@@ -77,6 +105,62 @@ async function callOpenAICompatible(messages: ChatMessage[]) {
   };
 }
 
+async function generateElevenV3Speech(text: string, mood: DragonMood, context: DragonContext) {
+  const apiKey = process.env.ELEVENLABS_API_KEY || "";
+  const voiceId = process.env.ELEVENLABS_VOICE_ID || "";
+  const model = process.env.ELEVENLABS_MODEL || "eleven_v3";
+
+  if (!apiKey || !voiceId) {
+    return {
+      ok: false as const,
+      reason: "voice_provider_not_configured",
+      model,
+    };
+  }
+
+  const plan = planVoiceSoul({ text, mood, context });
+  const providerText = renderElevenV3Prompt(plan);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45_000);
+
+  try {
+    const endpoint = new URL(
+      `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`,
+    );
+    endpoint.searchParams.set("output_format", "mp3_44100_128");
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "xi-api-key": apiKey,
+        "Content-Type": "application/json",
+        "Accept": "audio/mpeg",
+      },
+      body: JSON.stringify({
+        text: providerText,
+        model_id: model,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const detail = (await response.text()).slice(0, 320);
+      throw new Error(`ElevenLabs error ${response.status}: ${detail}`);
+    }
+
+    return {
+      ok: true as const,
+      model,
+      plan,
+      audio: Buffer.from(await response.arrayBuffer()),
+      requestId: response.headers.get("request-id") || "",
+      characterCost: response.headers.get("character-cost") || "",
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function startServer() {
   const app = express();
   const server = http.createServer(app);
@@ -85,7 +169,6 @@ async function startServer() {
 
   app.use(express.json({ limit: "1mb" }));
 
-  // MQTT Integration
   const MQTT_BROKER = process.env.MQTT_BROKER || "mqtt://192.168.70.196";
   const MQTT_TOPIC = process.env.MQTT_TOPIC || "UniversalDragon/NOVA/Reply";
 
@@ -132,8 +215,89 @@ async function startServer() {
       status: "ok",
       mqtt: mqttClient.connected,
       ai_provider: process.env.GROQ_API_KEY ? "groq" : process.env.OPENAI_API_KEY ? "openai" : "missing",
-      model: process.env.GROQ_API_KEY ? (process.env.GROQ_MODEL || "openai/gpt-oss-120b") : (process.env.OPENAI_MODEL || "gpt-4.1-mini")
+      model: process.env.GROQ_API_KEY ? (process.env.GROQ_MODEL || "openai/gpt-oss-120b") : (process.env.OPENAI_MODEL || "gpt-4.1-mini"),
+      voice: {
+        provider: "elevenlabs",
+        configured: Boolean(
+          process.env.ELEVENLABS_API_KEY
+          && process.env.ELEVENLABS_VOICE_ID
+          && process.env.DRAGON_VOICE_ACCESS_TOKEN
+        ),
+        protected: true,
+        model: process.env.ELEVENLABS_MODEL || "eleven_v3",
+      },
     });
+  });
+
+  app.get("/api/voice/status", (req, res) => {
+    res.json({
+      ok: true,
+      provider: "elevenlabs",
+      configured: Boolean(
+        process.env.ELEVENLABS_API_KEY
+        && process.env.ELEVENLABS_VOICE_ID
+        && process.env.DRAGON_VOICE_ACCESS_TOKEN
+      ),
+      protected: true,
+      model: process.env.ELEVENLABS_MODEL || "eleven_v3",
+      voice_id_exposed: false,
+    });
+  });
+
+  app.post("/api/voice/speak", async (req, res) => {
+    const auth = authorizeVoiceRequest(req);
+
+    if (auth === "disabled") {
+      return res.status(503).json({ ok: false, error: "voice_api_disabled" });
+    }
+
+    if (auth === "unauthorized") {
+      res.setHeader("WWW-Authenticate", "Bearer");
+      return res.status(401).json({ ok: false, error: "unauthorized" });
+    }
+
+    if (voiceRequestInFlight) {
+      return res.status(429).json({ ok: false, error: "voice_busy" });
+    }
+
+    voiceRequestInFlight = true;
+
+    try {
+      const text = String(req.body?.text || "").trim().slice(0, 1200);
+      const requestedMood = String(req.body?.mood || "PLAYFUL").toUpperCase() as DragonMood;
+      const requestedContext = String(req.body?.context || "CHAT").toUpperCase() as DragonContext;
+
+      if (!text) {
+        return res.status(400).json({ ok: false, error: "text_required" });
+      }
+
+      const mood: DragonMood = DRAGON_MOODS.has(requestedMood) ? requestedMood : "CALM";
+      const context: DragonContext = DRAGON_CONTEXTS.has(requestedContext) ? requestedContext : "CHAT";
+      const result = await generateElevenV3Speech(text, mood, context);
+
+      if (!result.ok) {
+        return res.status(503).json({
+          ok: false,
+          error: result.reason,
+          provider: "elevenlabs",
+          model: result.model,
+        });
+      }
+
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("Cache-Control", "no-store");
+      res.setHeader("X-Dragon-Voice-Mood", result.plan.mood);
+      res.setHeader("X-Dragon-Voice-Model", result.model);
+      if (result.requestId) res.setHeader("X-Provider-Request-Id", result.requestId);
+      if (result.characterCost) res.setHeader("X-Provider-Character-Cost", result.characterCost);
+      return res.send(result.audio);
+    } catch (error: any) {
+      const message = error?.name === "AbortError" ? "voice_provider_timeout" : "voice_generation_failed";
+      console.error("Dragon voice error:", message);
+      return res.status(502).json({ ok: false, error: message });
+    } finally {
+      voiceRequestInFlight = false;
+    }
   });
 
   app.post("/api/chat", async (req, res) => {
@@ -166,7 +330,6 @@ async function startServer() {
     }
   });
 
-  // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -185,6 +348,13 @@ async function startServer() {
     console.log(`🚀 Universal Dragon Server running on http://localhost:${PORT}`);
     console.log(`📡 MQTT Broker: ${MQTT_BROKER}`);
     console.log(`🧠 NOVA AI Provider: ${process.env.GROQ_API_KEY ? "Groq" : process.env.OPENAI_API_KEY ? "OpenAI" : "Missing key"}`);
+    console.log(`🎙️ Dragon Voice: ${
+      process.env.ELEVENLABS_API_KEY
+      && process.env.ELEVENLABS_VOICE_ID
+      && process.env.DRAGON_VOICE_ACCESS_TOKEN
+        ? "ElevenLabs protected endpoint ready"
+        : "Not configured"
+    }`);
     console.log(`🔗 Socket.io: Active`);
   });
 }
