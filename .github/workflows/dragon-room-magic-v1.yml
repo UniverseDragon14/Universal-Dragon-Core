@@ -6,6 +6,7 @@ on:
       - feat/dragon-room-magic-voice-soul-v1
   pull_request:
     paths:
+      - 'server.ts'
       - 'src/components/DragonResonance.tsx'
       - 'src/components/QuickActions.tsx'
       - 'src/App.tsx'
@@ -49,8 +50,13 @@ jobs:
           set -euo pipefail
           test -s room-magic/termux/awaken.html
           test -s room-magic/termux/awaken-v3.sh
+          test -s room-magic/termux/voice-eleven-v3.sh
+          test -s room-magic/elevenlabs.env.example
           bash -n room-magic/termux/awaken-v3.sh
+          bash -n room-magic/termux/voice-eleven-v3.sh
           grep -q '>DRAGON<' room-magic/termux/awaken.html
           grep -q '>RESONANCE<' room-magic/termux/awaken.html
           grep -q 'dragonAwaken' room-magic/termux/awaken.html
+          grep -q '^ELEVENLABS_API_KEY=$' room-magic/elevenlabs.env.example
+          grep -q '^ELEVENLABS_VOICE_ID=$' room-magic/elevenlabs.env.example
           echo 'TERMUX_PORTABLE_ASSETS=PASS'
