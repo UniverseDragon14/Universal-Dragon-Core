@@ -5,7 +5,7 @@ This folder is the portable handoff for the Dragon Resonance vertical slice trac
 ## What is ready
 
 - `termux/awaken.html` — self-contained mobile Dragon Resonance visual with no external assets.
-- `termux/awaken-v3.sh` — bounded Huawei Termux launcher for visual, vibration, optional local sound, torch pulses, expressive voice, and Android TTS fallback.
+- `termux/awaken-v3.sh` — bounded Huawei Termux launcher for visual, vibration, optional local room sound, torch pulses, expressive voice, and Android TTS fallback.
 - `termux/voice-eleven-v3.sh` — direct Eleven v3 Termux adapter. It reads credentials only from a local secret file and never prints them.
 - `elevenlabs.env.example` — empty configuration template only. Real values must remain local.
 - `src/voice/voiceSoul.ts` — provider-independent Voice Soul planning contract in the main app.
@@ -18,11 +18,14 @@ V1 does not send commands to the Raspberry Pi, Pico, hologram fan, or any other 
 
 No API keys, access tokens, real voice IDs, auth files, or secret `.env` values belong in GitHub.
 
+The Termux HTTP launcher serves a dedicated runtime directory containing only `awaken.html`; it does not expose the whole lab directory over loopback.
+
 ## Huawei Termux handoff
 
-When the device is available, copy the portable files into the existing lab directory:
+After cloning or downloading this repository, run the copy commands from the repository root:
 
 ```bash
+cd room-magic/termux
 mkdir -p "$HOME/dragon-room-magic-v1"
 cp awaken.html "$HOME/dragon-room-magic-v1/awaken.html"
 cp awaken-v3.sh "$HOME/dragon-room-magic-v1/awaken-v3.sh"
@@ -59,6 +62,7 @@ Then run:
 Expected proof markers include:
 
 ```text
+HTTP_ASSET_IDENTITY=PASS
 VISUAL_HTTP=PASS
 VOICE_PATH=ELEVEN_V3
 ROOM_EFFECTS=BOUNDED
@@ -66,7 +70,7 @@ REMOTE_HARDWARE_COMMANDS=NO
 DRAGON_ROOM_MAGIC_V3=PASS
 ```
 
-If the expressive provider is not configured, `VOICE_PATH=ANDROID_TTS_FALLBACK` is expected and the rest of Room Magic still runs.
+If the expressive provider is not configured, `VOICE_PATH=ANDROID_TTS_FALLBACK` is expected and the rest of Room Magic still runs. The local generated WAV is a separate room-effect layer, not a speech fallback.
 
 ## Server-side voice contract
 
