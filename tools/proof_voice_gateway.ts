@@ -64,7 +64,7 @@ const blockedByCharacters = reserveVoiceBudget(
   101,
 );
 assert.equal(blockedByCharacters.allowed, false);
-if (!blockedByCharacters.allowed) {
+if (blockedByCharacters.allowed === false) {
   assert.equal(blockedByCharacters.reason, 'voice_daily_character_limit');
 }
 
