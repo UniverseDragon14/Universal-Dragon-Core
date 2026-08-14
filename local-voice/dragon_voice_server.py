@@ -12,7 +12,7 @@ from typing import Any
 
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from piper import PiperVoice, SynthesisConfig
 
 APP_DIR = Path(__file__).resolve().parent
@@ -21,13 +21,14 @@ PROFILES_PATH = Path(os.environ.get("DRAGON_VOICE_PROFILES", APP_DIR / "profiles
 ACCESS_TOKEN = os.environ.get("DRAGON_VOICE_TOKEN", "")
 MAX_TEXT_CHARS = int(os.environ.get("DRAGON_VOICE_MAX_TEXT", "1200"))
 
-app = FastAPI(title="Universal Dragon Local Voice", version="1.0.0")
+app = FastAPI(title="Universal Dragon Local Voice", version="1.0.1")
 _cache_lock = threading.Lock()
 _synthesis_lock = threading.Lock()
 _voice_cache: dict[str, PiperVoice] = {}
 
 
 def _load_profiles() -> dict[str, Any]:
+    """Load and validate the local voice profile contract."""
     data = json.loads(PROFILES_PATH.read_text(encoding="utf-8"))
     if data.get("schema") != "dragon.local-voice.profiles.v1":
         raise RuntimeError("unsupported voice profile schema")
@@ -43,8 +44,9 @@ PROFILES = _load_profiles()
 
 
 def _authorized(authorization: str | None) -> bool:
+    """Validate the configured bearer token with constant-time comparison."""
     if not ACCESS_TOKEN:
-        return True
+        return False
     if not authorization or not authorization.lower().startswith("bearer "):
         return False
     candidate = authorization.split(" ", 1)[1].strip()
@@ -52,11 +54,13 @@ def _authorized(authorization: str | None) -> bool:
 
 
 def _require_auth(authorization: str | None) -> None:
+    """Reject unauthenticated synthesis/profile requests."""
     if not _authorized(authorization):
         raise HTTPException(status_code=401, detail="unauthorized", headers={"WWW-Authenticate": "Bearer"})
 
 
 def _safe_model_path(filename: str) -> Path:
+    """Resolve a model filename without allowing path traversal."""
     if not filename or Path(filename).name != filename:
         raise RuntimeError("invalid model filename")
     path = (MODEL_DIR / filename).resolve()
@@ -66,12 +70,14 @@ def _safe_model_path(filename: str) -> Path:
 
 
 def _resolve_profile(name: str) -> tuple[str, dict[str, Any]]:
+    """Return a requested profile or the configured default profile."""
     profiles: dict[str, Any] = PROFILES["profiles"]
     selected = name if name in profiles else PROFILES["default_profile"]
     return selected, profiles[selected]
 
 
 def _get_voice(profile: dict[str, Any]) -> tuple[PiperVoice, Path, bool]:
+    """Load and cache a dedicated Piper model or the bootstrap fallback."""
     requested = _safe_model_path(str(profile["model"]))
     fallback = False
     model_path = requested
@@ -96,10 +102,10 @@ def _get_voice(profile: dict[str, Any]) -> tuple[PiperVoice, Path, bool]:
 
 
 def _synthesis_config(profile: dict[str, Any], intensity: float) -> SynthesisConfig:
+    """Create bounded Piper synthesis controls from a Dragon profile."""
     intensity = max(0.0, min(1.0, intensity))
     base_noise = float(profile.get("noise_scale", 0.667))
     base_width = float(profile.get("noise_w_scale", 0.8))
-    # Keep profile character bounded. Intensity only nudges variation, never model identity.
     noise_scale = max(0.1, min(1.5, base_noise * (0.9 + 0.2 * intensity)))
     noise_w_scale = max(0.1, min(1.5, base_width * (0.9 + 0.2 * intensity)))
     return SynthesisConfig(
@@ -112,13 +118,25 @@ def _synthesis_config(profile: dict[str, Any], intensity: float) -> SynthesisCon
 
 
 class SpeakRequest(BaseModel):
+    """Bounded local speech request."""
+
     text: str = Field(min_length=1, max_length=MAX_TEXT_CHARS)
     profile: str = "nova_warm"
     intensity: float = Field(default=0.65, ge=0.0, le=1.0)
 
+    @field_validator("text")
+    @classmethod
+    def text_must_not_be_blank(cls, value: str) -> str:
+        """Reject whitespace-only input before synthesis."""
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("text must contain non-whitespace characters")
+        return stripped
+
 
 @app.get("/health")
 def health() -> dict[str, Any]:
+    """Return non-secret runtime health and truth-boundary markers."""
     profiles: dict[str, Any] = PROFILES["profiles"]
     installed = []
     for name, profile in profiles.items():
@@ -138,6 +156,7 @@ def health() -> dict[str, Any]:
         "v3d_voice_inference_claimed": False,
         "profile_count": len(profiles),
         "default_model_ready": default_path.is_file(),
+        "auth_configured": bool(ACCESS_TOKEN),
         "profiles": installed,
         "paid_api_required": False,
     }
@@ -145,6 +164,7 @@ def health() -> dict[str, Any]:
 
 @app.get("/v1/profiles")
 def list_profiles(authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    """List public profile metadata for an authenticated local client."""
     _require_auth(authorization)
     public_profiles = []
     for name, profile in PROFILES["profiles"].items():
@@ -165,6 +185,7 @@ def list_profiles(authorization: str | None = Header(default=None)) -> dict[str,
 
 @app.post("/v1/speak")
 def speak(request: SpeakRequest, authorization: str | None = Header(default=None)) -> Response:
+    """Generate a local WAV with a bounded Dragon profile."""
     _require_auth(authorization)
     profile_name, profile = _resolve_profile(request.profile)
     voice, model_path, fallback = _get_voice(profile)
@@ -174,7 +195,7 @@ def speak(request: SpeakRequest, authorization: str | None = Header(default=None
     buffer = io.BytesIO()
     with _synthesis_lock:
         with wave.open(buffer, "wb") as wav_file:
-            voice.synthesize_wav(request.text.strip(), wav_file, syn_config=syn_config)
+            voice.synthesize_wav(request.text, wav_file, syn_config=syn_config)
     elapsed_ms = int((time.perf_counter() - started) * 1000)
 
     return Response(
