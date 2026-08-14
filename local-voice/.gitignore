@@ -4,6 +4,13 @@ models/*.pt
 models/*.pth
 models/*.ckpt
 .env
+runtime.env
 .venv/
 __pycache__/
+cache/
 *.wav
+*.headers
+health.json
+plan-proof.json
+nano-health.json
+seven-voice-proof/
