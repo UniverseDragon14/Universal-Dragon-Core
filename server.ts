@@ -471,7 +471,7 @@ async function startServer() {
       }
 
       const budget = await reservePaidVoiceBudget(plan.spokenText.length);
-      if (!budget.allowed) {
+      if (budget.allowed === false) {
         return res.status(429).json({
           ok: false,
           error: budget.reason,
@@ -485,7 +485,7 @@ async function startServer() {
         ? await generateOpenAITtsSpeech(plan, profile)
         : await generateElevenV3Speech(plan);
 
-      if (!result.ok) {
+      if (result.ok === false) {
         return res.status(503).json({
           ok: false,
           error: result.reason,
