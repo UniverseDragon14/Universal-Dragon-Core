@@ -42,18 +42,20 @@ export function utcVoiceUsageDate(now = new Date()): string {
   return now.toISOString().slice(0, 10);
 }
 
-export function normalizeVoiceUsage(
-  value: Partial<VoiceUsageState> | null | undefined,
-  date: string,
-): VoiceUsageState {
-  if (value?.date !== date) {
+export function normalizeVoiceUsage(value: unknown, date: string): VoiceUsageState {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return { date, requestCount: 0, characterCount: 0 };
+  }
+
+  const candidate = value as Record<string, unknown>;
+  if (candidate.date !== date) {
     return { date, requestCount: 0, characterCount: 0 };
   }
 
   return {
     date,
-    requestCount: nonNegativeInteger(value.requestCount),
-    characterCount: nonNegativeInteger(value.characterCount),
+    requestCount: nonNegativeInteger(candidate.requestCount),
+    characterCount: nonNegativeInteger(candidate.characterCount),
   };
 }
 
