@@ -14,3 +14,6 @@ __pycache__/
 .idea/
 .tmp/
 dist/
+
+# Runtime voice budget state
+data/dragon-voice-usage.json
