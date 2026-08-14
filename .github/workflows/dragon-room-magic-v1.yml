@@ -72,106 +72,16 @@ jobs:
           grep -q 'dragonAwaken' room-magic/termux/awaken.html
           grep -q '^ELEVENLABS_API_KEY=$' room-magic/elevenlabs.env.example
           grep -q '^ELEVENLABS_VOICE_ID=$' room-magic/elevenlabs.env.example
-          grep -q '^DRAGON_VOICE_ACCESS_TOKEN=          grep -q -- '--directory "$WEB_ROOT"' room-magic/termux/awaken-v3.sh
-          echo 'TERMUX_PORTABLE_ASSETS=PASS'
-
-      - name: Prove Termux handoff installer
-        shell: bash
-        run: |
-          set -euo pipefail
-          export HOME="$RUNNER_TEMP/dragon-home"
-          export DRAGON_ROOM_MAGIC_HOME="$RUNNER_TEMP/dragon-target"
-          export DRAGON_ROOM_MAGIC_BACKUPS="$RUNNER_TEMP/dragon-backups"
-          mkdir -p "$HOME"
-          bash room-magic/termux/install-v1.sh | tee "$RUNNER_TEMP/install-proof.log"
-          grep -q '^SECRET_FILES_TOUCHED=NO$' "$RUNNER_TEMP/install-proof.log"
-          grep -q '^ROOM_MAGIC_HANDOFF_INSTALL=PASS$' "$RUNNER_TEMP/install-proof.log"
-          test -s "$DRAGON_ROOM_MAGIC_HOME/awaken.html"
-          test -x "$DRAGON_ROOM_MAGIC_HOME/awaken-v3.sh"
-          test -x "$DRAGON_ROOM_MAGIC_HOME/voice-eleven-v3.sh"
-          echo 'TERMUX_HANDOFF_PROOF=PASS'
- room-magic/elevenlabs.env.example
-          grep -q '^DRAGON_VOICE_PROVIDER=local          grep -q -- '--directory "$WEB_ROOT"' room-magic/termux/awaken-v3.sh
-          echo 'TERMUX_PORTABLE_ASSETS=PASS'
-
-      - name: Prove Termux handoff installer
-        shell: bash
-        run: |
-          set -euo pipefail
-          export HOME="$RUNNER_TEMP/dragon-home"
-          export DRAGON_ROOM_MAGIC_HOME="$RUNNER_TEMP/dragon-target"
-          export DRAGON_ROOM_MAGIC_BACKUPS="$RUNNER_TEMP/dragon-backups"
-          mkdir -p "$HOME"
-          bash room-magic/termux/install-v1.sh | tee "$RUNNER_TEMP/install-proof.log"
-          grep -q '^SECRET_FILES_TOUCHED=NO$' "$RUNNER_TEMP/install-proof.log"
-          grep -q '^ROOM_MAGIC_HANDOFF_INSTALL=PASS$' "$RUNNER_TEMP/install-proof.log"
-          test -s "$DRAGON_ROOM_MAGIC_HOME/awaken.html"
-          test -x "$DRAGON_ROOM_MAGIC_HOME/awaken-v3.sh"
-          test -x "$DRAGON_ROOM_MAGIC_HOME/voice-eleven-v3.sh"
-          echo 'TERMUX_HANDOFF_PROOF=PASS'
- room-magic/openai.env.example
-          grep -q '^DRAGON_VOICE_ACCESS_TOKEN=          grep -q -- '--directory "$WEB_ROOT"' room-magic/termux/awaken-v3.sh
-          echo 'TERMUX_PORTABLE_ASSETS=PASS'
-
-      - name: Prove Termux handoff installer
-        shell: bash
-        run: |
-          set -euo pipefail
-          export HOME="$RUNNER_TEMP/dragon-home"
-          export DRAGON_ROOM_MAGIC_HOME="$RUNNER_TEMP/dragon-target"
-          export DRAGON_ROOM_MAGIC_BACKUPS="$RUNNER_TEMP/dragon-backups"
-          mkdir -p "$HOME"
-          bash room-magic/termux/install-v1.sh | tee "$RUNNER_TEMP/install-proof.log"
-          grep -q '^SECRET_FILES_TOUCHED=NO$' "$RUNNER_TEMP/install-proof.log"
-          grep -q '^ROOM_MAGIC_HANDOFF_INSTALL=PASS$' "$RUNNER_TEMP/install-proof.log"
-          test -s "$DRAGON_ROOM_MAGIC_HOME/awaken.html"
-          test -x "$DRAGON_ROOM_MAGIC_HOME/awaken-v3.sh"
-          test -x "$DRAGON_ROOM_MAGIC_HOME/voice-eleven-v3.sh"
-          echo 'TERMUX_HANDOFF_PROOF=PASS'
- room-magic/openai.env.example
-          grep -q '^OPENAI_TTS_MODEL=gpt-4o-mini-tts          grep -q -- '--directory "$WEB_ROOT"' room-magic/termux/awaken-v3.sh
-          echo 'TERMUX_PORTABLE_ASSETS=PASS'
-
-      - name: Prove Termux handoff installer
-        shell: bash
-        run: |
-          set -euo pipefail
-          export HOME="$RUNNER_TEMP/dragon-home"
-          export DRAGON_ROOM_MAGIC_HOME="$RUNNER_TEMP/dragon-target"
-          export DRAGON_ROOM_MAGIC_BACKUPS="$RUNNER_TEMP/dragon-backups"
-          mkdir -p "$HOME"
-          bash room-magic/termux/install-v1.sh | tee "$RUNNER_TEMP/install-proof.log"
-          grep -q '^SECRET_FILES_TOUCHED=NO$' "$RUNNER_TEMP/install-proof.log"
-          grep -q '^ROOM_MAGIC_HANDOFF_INSTALL=PASS$' "$RUNNER_TEMP/install-proof.log"
-          test -s "$DRAGON_ROOM_MAGIC_HOME/awaken.html"
-          test -x "$DRAGON_ROOM_MAGIC_HOME/awaken-v3.sh"
-          test -x "$DRAGON_ROOM_MAGIC_HOME/voice-eleven-v3.sh"
-          echo 'TERMUX_HANDOFF_PROOF=PASS'
- room-magic/openai.env.example
+          grep -q '^DRAGON_VOICE_ACCESS_TOKEN=$' room-magic/elevenlabs.env.example
+          grep -q '^DRAGON_VOICE_PROVIDER=local$' room-magic/openai.env.example
+          grep -q '^DRAGON_VOICE_ACCESS_TOKEN=$' room-magic/openai.env.example
+          grep -q '^OPENAI_TTS_MODEL=gpt-4o-mini-tts$' room-magic/openai.env.example
           grep -q 'authorizeVoiceRequest' server.ts
           grep -q 'voice_api_disabled' server.ts
           grep -q 'generateOpenAITtsSpeech' server.ts
           grep -q 'premium_voice_opt_in_required' server.ts
           grep -q 'reservePaidVoiceBudget' server.ts
-          grep -q '^data/dragon-voice-usage.json          grep -q -- '--directory "$WEB_ROOT"' room-magic/termux/awaken-v3.sh
-          echo 'TERMUX_PORTABLE_ASSETS=PASS'
-
-      - name: Prove Termux handoff installer
-        shell: bash
-        run: |
-          set -euo pipefail
-          export HOME="$RUNNER_TEMP/dragon-home"
-          export DRAGON_ROOM_MAGIC_HOME="$RUNNER_TEMP/dragon-target"
-          export DRAGON_ROOM_MAGIC_BACKUPS="$RUNNER_TEMP/dragon-backups"
-          mkdir -p "$HOME"
-          bash room-magic/termux/install-v1.sh | tee "$RUNNER_TEMP/install-proof.log"
-          grep -q '^SECRET_FILES_TOUCHED=NO$' "$RUNNER_TEMP/install-proof.log"
-          grep -q '^ROOM_MAGIC_HANDOFF_INSTALL=PASS$' "$RUNNER_TEMP/install-proof.log"
-          test -s "$DRAGON_ROOM_MAGIC_HOME/awaken.html"
-          test -x "$DRAGON_ROOM_MAGIC_HOME/awaken-v3.sh"
-          test -x "$DRAGON_ROOM_MAGIC_HOME/voice-eleven-v3.sh"
-          echo 'TERMUX_HANDOFF_PROOF=PASS'
- .gitignore
+          grep -q '^data/dragon-voice-usage.json$' .gitignore
           grep -q -- '--directory "$WEB_ROOT"' room-magic/termux/awaken-v3.sh
           echo 'TERMUX_PORTABLE_ASSETS=PASS'
 
