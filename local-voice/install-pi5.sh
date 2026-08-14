@@ -6,7 +6,7 @@ APP_HOME="${DRAGON_LOCAL_VOICE_HOME:-$HOME/dragon-local-voice-v1}"
 MODEL_DIR="$APP_HOME/models"
 VENV="$APP_HOME/.venv"
 PORT="${DRAGON_LOCAL_VOICE_PORT:-8123}"
-BOOTSTRAP_VOICE="${DRAGON_BOOTSTRAP_VOICE:-en_US-lessac-medium}"
+BOOTSTRAP_VOICE="en_US-lessac-medium"
 SERVICE_DIR="$HOME/.config/systemd/user"
 SERVICE_FILE="$SERVICE_DIR/dragon-local-voice.service"
 ENV_FILE="$APP_HOME/.env"
@@ -51,7 +51,7 @@ echo "BOOTSTRAP_MODEL=$BOOTSTRAP_VOICE"
 echo 'BOOTSTRAP_MODEL=PASS'
 
 if [ ! -s "$ENV_FILE" ]; then
-  TOKEN="$($VENV/bin/python - <<'PY'
+  TOKEN="$("$VENV/bin/python" - <<'PY'
 import secrets
 print(secrets.token_urlsafe(48))
 PY
@@ -65,6 +65,7 @@ DRAGON_VOICE_MAX_TEXT=1200
 EOF
 fi
 chmod 600 "$ENV_FILE"
+grep -q '^DRAGON_VOICE_TOKEN=.' "$ENV_FILE"
 echo 'LOCAL_SECRET_FILE=PASS'
 
 cat >"$SERVICE_FILE" <<EOF
@@ -104,6 +105,7 @@ done
 
 grep -q '"ok":true' "$APP_HOME/health.json"
 grep -q '"paid_api_required":false' "$APP_HOME/health.json"
+grep -q '"auth_configured":true' "$APP_HOME/health.json"
 echo 'LOCAL_VOICE_HEALTH=PASS'
 
 set -a
