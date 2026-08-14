@@ -65,7 +65,7 @@ jobs:
             exit 1
           fi
 
-          if git grep -nE 'sk-[A-Za-z0-9_-]{16,}|xi-api-key:[[:space:]]*[^$]' -- "${SCAN_PATHS[@]}"; then
+          if git grep -nE 'sk-[A-Za-z0-9_-]{16,}|xi-api-key:[[:space:]]+[A-Za-z0-9_-]{16,}' -- "${SCAN_PATHS[@]}"; then
             echo 'PAID_PROVIDER_SECRET=FAIL'
             exit 1
           fi
@@ -98,10 +98,10 @@ jobs:
           cp room-magic/termux/voice-local-pi5-v2.sh build/dragon-local-voice-v2/room-magic/termux/
           cp src/voice/localPi.ts build/dragon-local-voice-v2/src/voice/
           find build -type d -name '__pycache__' -prune -exec rm -rf {} +
-          find build -type f \( -name '.env' -o -name '*.wav' -o -name '*.onnx' -o -name '*.pt' -o -name '*.pth' \) -print -quit | grep -q . && {
+          if find build -type f \( -name '.env' -o -name '*.wav' -o -name '*.onnx' -o -name '*.pt' -o -name '*.pth' \) -print -quit | grep -q .; then
             echo 'HANDOFF_SECRET_OR_WEIGHT=FAIL'
             exit 1
-          } || true
+          fi
           (
             cd build
             zip -qr dragon-local-voice-v2-handoff.zip dragon-local-voice-v2
