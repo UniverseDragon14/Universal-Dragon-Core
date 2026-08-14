@@ -1,0 +1,57 @@
+name: Dragon Local Voice V1
+
+on:
+  push:
+    branches:
+      - feat/dragon-local-voice-v1
+  pull_request:
+    paths:
+      - 'local-voice/**'
+      - 'room-magic/termux/voice-local-pi5.sh'
+      - '.github/workflows/dragon-local-voice-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Python and profile contract
+        run: python local-voice/verify_static.py
+
+      - name: Shell syntax
+        run: |
+          bash -n local-voice/install-pi5.sh
+          bash -n room-magic/termux/voice-local-pi5.sh
+          echo 'LOCAL_VOICE_SHELL_SYNTAX=PASS'
+
+      - name: Secret and paid-provider guard
+        run: |
+          set -euo pipefail
+          ! grep -R -nE 'sk-[A-Za-z0-9_-]{16,}|xi-api-key:[[:space:]]*[^$]' local-voice room-magic/termux/voice-local-pi5.sh
+          grep -q 'PAID_API_USED=NO' local-voice/install-pi5.sh
+          grep -q 'ELEVENLABS_REQUIRED=NO' local-voice/install-pi5.sh
+          grep -q 'V3D_TTS_INFERENCE_CLAIMED=NO' local-voice/install-pi5.sh
+          echo 'LOCAL_VOICE_SECRET_GUARD=PASS'
+
+      - name: No committed voice weights
+        run: |
+          set -euo pipefail
+          if find local-voice -type f \( -name '*.onnx' -o -name '*.pt' -o -name '*.pth' -o -name '*.ckpt' \) | grep -q .; then
+            echo 'MODEL_WEIGHT_COMMIT=FAIL'
+            exit 1
+          fi
+          echo 'MODEL_WEIGHT_COMMIT=NO'
+          echo 'DRAGON_LOCAL_VOICE_CI=PASS'

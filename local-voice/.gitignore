@@ -1,0 +1,9 @@
+models/*.onnx
+models/*.onnx.json
+models/*.pt
+models/*.pth
+models/*.ckpt
+.env
+.venv/
+__pycache__/
+*.wav

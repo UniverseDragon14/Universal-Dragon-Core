@@ -1,0 +1,70 @@
+{
+  "schema": "dragon.local-voice.profiles.v1",
+  "default_profile": "nova_warm",
+  "default_model": "en_US-lessac-medium.onnx",
+  "profiles": {
+    "nova_warm": {
+      "display_name": "NOVA Warm",
+      "character": "warm, clear, reassuring everyday assistant",
+      "model": "dragon-nova-warm.onnx",
+      "volume": 1.0,
+      "length_scale": 1.02,
+      "noise_scale": 0.58,
+      "noise_w_scale": 0.72
+    },
+    "dragon_playful": {
+      "display_name": "Dragon Playful",
+      "character": "smiling, light, teasing, energetic",
+      "model": "dragon-playful.onnx",
+      "volume": 1.0,
+      "length_scale": 0.94,
+      "noise_scale": 0.74,
+      "noise_w_scale": 0.90
+    },
+    "dragon_serious": {
+      "display_name": "Dragon Serious",
+      "character": "firm, controlled, command-ready",
+      "model": "dragon-serious.onnx",
+      "volume": 1.02,
+      "length_scale": 1.08,
+      "noise_scale": 0.45,
+      "noise_w_scale": 0.60
+    },
+    "dragon_deep": {
+      "display_name": "Dragon Deep",
+      "character": "mature, deep, cinematic authority",
+      "model": "dragon-deep.onnx",
+      "volume": 1.03,
+      "length_scale": 1.12,
+      "noise_scale": 0.50,
+      "noise_w_scale": 0.62
+    },
+    "whatsapp_natural": {
+      "display_name": "WhatsApp Natural",
+      "character": "short, conversational, friendly voice-note delivery",
+      "model": "dragon-whatsapp-natural.onnx",
+      "volume": 1.0,
+      "length_scale": 0.98,
+      "noise_scale": 0.60,
+      "noise_w_scale": 0.74
+    },
+    "story_soul": {
+      "display_name": "Story Soul",
+      "character": "expressive storyteller with measured pacing",
+      "model": "dragon-story-soul.onnx",
+      "volume": 1.0,
+      "length_scale": 1.06,
+      "noise_scale": 0.70,
+      "noise_w_scale": 0.86
+    },
+    "night_whisper": {
+      "display_name": "Night Whisper",
+      "character": "soft, low-energy, quiet late-night assistant",
+      "model": "dragon-night-whisper.onnx",
+      "volume": 0.82,
+      "length_scale": 1.14,
+      "noise_scale": 0.42,
+      "noise_w_scale": 0.54
+    }
+  }
+}
