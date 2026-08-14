@@ -55,3 +55,27 @@ jobs:
           fi
           echo 'MODEL_WEIGHT_COMMIT=NO'
           echo 'DRAGON_LOCAL_VOICE_CI=PASS'
+
+      - name: Build portable handoff ZIP
+        run: |
+          set -euo pipefail
+          mkdir -p build/dragon-local-voice-v1/room-magic/termux
+          cp -a local-voice build/dragon-local-voice-v1/
+          cp room-magic/termux/voice-local-pi5.sh build/dragon-local-voice-v1/room-magic/termux/
+          (
+            cd build
+            zip -qr dragon-local-voice-v1-handoff.zip dragon-local-voice-v1
+          )
+          test -s build/dragon-local-voice-v1-handoff.zip
+          sha256sum build/dragon-local-voice-v1-handoff.zip | tee build/dragon-local-voice-v1-handoff.sha256
+          echo 'PORTABLE_VOICE_HANDOFF=PASS'
+
+      - name: Upload portable handoff
+        uses: actions/upload-artifact@v4
+        with:
+          name: dragon-local-voice-v1-handoff
+          path: |
+            build/dragon-local-voice-v1-handoff.zip
+            build/dragon-local-voice-v1-handoff.sha256
+          if-no-files-found: error
+          retention-days: 14
