@@ -77,33 +77,85 @@ If the expressive provider is not configured, `VOICE_PATH=ANDROID_TTS_FALLBACK` 
 
 ## Protected server-side voice contract
 
-The server runtime needs all four variables before the billable endpoint is enabled:
+The already-configured Pi5 `OPENAI_API_KEY` remains only in the server runtime environment. This repository, the status endpoints, and application logs never list, copy, return, or print its value.
+
+### Provider modes
+
+- `local` is the safe default. The protected endpoint returns a `202` client-TTS instruction and makes no paid provider request.
+- `openai` enables OpenAI Text-to-Speech only when the existing runtime key is available.
+- `elevenlabs` keeps the existing optional server-side ElevenLabs flow available.
+- A request body cannot select a provider; only the server environment can do that.
+
+Use `room-magic/openai.env.example` as a names-only template. Do not add real secrets to it or commit a populated `.env` file.
 
 ```text
-ELEVENLABS_API_KEY=<server secret>
-ELEVENLABS_VOICE_ID=<saved Arabella voice id>
-ELEVENLABS_MODEL=eleven_v3
+DRAGON_VOICE_PROVIDER=local
 DRAGON_VOICE_ACCESS_TOKEN=<separate strong bearer token>
+OPENAI_TTS_MODEL=gpt-4o-mini-tts
+DRAGON_VOICE_DEFAULT_PROFILE=NOVA
+DRAGON_VOICE_MAX_INPUT_CHARS=400
+DRAGON_VOICE_DAILY_MAX_REQUESTS=6
+DRAGON_VOICE_DAILY_MAX_CHARACTERS=2400
+DRAGON_VOICE_USAGE_FILE=<optional local path>
 ```
 
-`POST /api/voice/speak` requires:
+When `DRAGON_VOICE_PROVIDER=openai`, the existing `OPENAI_API_KEY` must already be loaded by the service environment. It is intentionally not duplicated in this template.
+
+### Six built-in voice profiles
+
+| Profile | OpenAI built-in voice | Intended style |
+| --- | --- | --- |
+| `NOVA` | `marin` | warm, clear assistant |
+| `EVE` | `cedar` | friendly and confident |
+| `DRAGON` | `onyx` | deliberate and protective |
+| `ANANYA` | `coral` | bright and gentle |
+| `GUARDIAN` | `sage` | calm safety guidance |
+| `NARRATOR` | `alloy` | balanced storytelling |
+
+These are built-in provider voices only. This implementation does not train, clone, or upload anyone's voice.
+
+### Calling the protected endpoint
+
+`POST /api/voice/speak` always requires:
 
 ```text
 Authorization: Bearer <DRAGON_VOICE_ACCESS_TOKEN>
 ```
 
-Body:
+A paid provider additionally requires a strict per-request opt-in:
 
 ```json
 {
   "text": "Heey, Aslam... Dragon Resonance is active.",
   "mood": "PLAYFUL",
-  "context": "WAKE"
+  "context": "WAKE",
+  "voice_profile": "NOVA",
+  "premium": true
 }
 ```
 
-The server converts the provider-neutral Voice Soul plan into Eleven v3 prompt text and returns MP3 audio. Only one server-side voice generation is admitted at a time. The provider key, access token, and voice ID are never returned by `/api/voice/status` or `/api/health`.
+With `local`, the response is a `202` JSON instruction containing sanitized text for client-side/Android TTS. With `openai` or `elevenlabs`, omitting `"premium": true` returns `premium_voice_opt_in_required` and no billable request is made.
 
+Successful paid audio is MP3 and includes `X-Dragon-AI-Generated: true`. The playback UI must clearly disclose that the voice is AI-generated before the user hears it.
+
+### Cost and safety guard
+
+- The default limit is 400 input characters, 6 paid requests/day, and 2,400 paid characters/day.
+- Usage resets on the UTC date and is written to `data/dragon-voice-usage.json`, which is ignored by Git.
+- A paid request reserves its budget before contacting a provider. Provider failures are not rolled back, which intentionally favors cost safety.
+- Corrupt or unavailable usage-state storage fails closed with `voice_budget_state_unavailable`; it does not make a paid fallback request.
+- The JSON state file is designed for the single Pi5 service process. A future multi-instance deployment needs a shared atomic usage store.
+- Private reasoning tags and bracketed audio labels are removed by the Voice Soul planner before text is returned or sent to a provider.
+
+The existing ElevenLabs secret variables remain supported for the `elevenlabs` provider:
+
+```text
+ELEVENLABS_API_KEY=<server secret>
+ELEVENLABS_VOICE_ID=<saved provider voice id>
+ELEVENLABS_MODEL=eleven_v3
+```
+
+The provider key, bearer token, and voice ID are never returned by `/api/voice/status` or `/api/health`.
 ## Next integration gates
 
 1. Keep CI and automated review clean.
