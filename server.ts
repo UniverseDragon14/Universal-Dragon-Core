@@ -15,6 +15,7 @@ import {
   listDragonVoiceProfiles,
 } from "./src/voice/openaiTts";
 import {
+  normalizeVoiceUsage,
   parsePositiveInteger,
   reserveVoiceBudget,
   resolveDragonVoiceProvider,
@@ -95,7 +96,11 @@ async function reservePaidVoiceBudget(inputCharacters: number) {
     throw new Error("voice_budget_state_unavailable");
   }
 
-  const reservation = reserveVoiceBudget(current, voiceBudgetLimits(), inputCharacters, usageDate);
+  const reservation = reserveVoiceBudget(
+    normalizeVoiceUsage(current, usageDate),
+    voiceBudgetLimits(),
+    inputCharacters,
+  );
   if (!reservation.allowed) return reservation;
 
   try {
