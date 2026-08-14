@@ -1,4 +1,4 @@
-name: Dragon Local Voice V1
+name: Dragon Local Voice V1 + Human Voice Soul V2
 
 on:
   push:
@@ -8,15 +8,20 @@ on:
     paths:
       - 'local-voice/**'
       - 'room-magic/termux/voice-local-pi5.sh'
+      - 'room-magic/termux/voice-local-pi5-v2.sh'
+      - 'src/voice/localPi.ts'
       - '.github/workflows/dragon-local-voice-v1.yml'
 
 permissions:
   contents: read
 
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
 jobs:
   static-proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,54 +33,91 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Python and profile contract
+      - name: V1 static contract
         run: python local-voice/verify_static.py
+
+      - name: V2 Human Voice Soul contract
+        run: python local-voice/v2/verify_v2_static.py
 
       - name: Shell syntax
         run: |
+          set -euo pipefail
           bash -n local-voice/install-pi5.sh
+          bash -n local-voice/v2/install-v2-pi5.sh
+          bash -n local-voice/v2/install-nano-pi5.sh
+          bash -n local-voice/v2/proof-seven-voices.sh
           bash -n room-magic/termux/voice-local-pi5.sh
+          bash -n room-magic/termux/voice-local-pi5-v2.sh
           echo 'LOCAL_VOICE_SHELL_SYNTAX=PASS'
 
       - name: Secret and paid-provider guard
         run: |
           set -euo pipefail
-          ! grep -R -nE 'sk-[A-Za-z0-9_-]{16,}|xi-api-key:[[:space:]]*[^$]' local-voice room-magic/termux/voice-local-pi5.sh
+          SCAN_PATHS=(local-voice room-magic/termux src/voice/localPi.ts)
+
+          if git ls-files 'local-voice/**' | grep -Eq '(^|/)\.env$'; then
+            echo 'TRACKED_LOCAL_ENV=FAIL'
+            exit 1
+          fi
+
+          if git grep -nE 'DRAGON_VOICE_TOKEN=[A-Za-z0-9_-]{16,}' -- "${SCAN_PATHS[@]}"; then
+            echo 'HARDCODED_DRAGON_TOKEN=FAIL'
+            exit 1
+          fi
+
+          if git grep -nE 'sk-[A-Za-z0-9_-]{16,}|xi-api-key:[[:space:]]*[^$]' -- "${SCAN_PATHS[@]}"; then
+            echo 'PAID_PROVIDER_SECRET=FAIL'
+            exit 1
+          fi
+
           grep -q 'PAID_API_USED=NO' local-voice/install-pi5.sh
           grep -q 'ELEVENLABS_REQUIRED=NO' local-voice/install-pi5.sh
           grep -q 'V3D_TTS_INFERENCE_CLAIMED=NO' local-voice/install-pi5.sh
+          grep -q 'PAID_API_USED=NO' local-voice/v2/install-v2-pi5.sh
+          grep -q 'V3D_TTS_INFERENCE_CLAIMED=NO' local-voice/v2/install-v2-pi5.sh
           echo 'LOCAL_VOICE_SECRET_GUARD=PASS'
 
-      - name: No committed voice weights
+      - name: No committed voice weights or references
         run: |
           set -euo pipefail
-          if find local-voice -type f \( -name '*.onnx' -o -name '*.pt' -o -name '*.pth' -o -name '*.ckpt' \) | grep -q .; then
-            echo 'MODEL_WEIGHT_COMMIT=FAIL'
+          if find local-voice -type f \( -name '*.onnx' -o -name '*.pt' -o -name '*.pth' -o -name '*.ckpt' -o -name '*.wav' \) | grep -q .; then
+            echo 'VOICE_WEIGHT_OR_REFERENCE_COMMIT=FAIL'
             exit 1
           fi
-          echo 'MODEL_WEIGHT_COMMIT=NO'
+          echo 'VOICE_WEIGHT_OR_REFERENCE_COMMIT=NO'
           echo 'DRAGON_LOCAL_VOICE_CI=PASS'
 
-      - name: Build portable handoff ZIP
+      - name: Build portable V2 handoff ZIP
         run: |
           set -euo pipefail
-          mkdir -p build/dragon-local-voice-v1/room-magic/termux
-          cp -a local-voice build/dragon-local-voice-v1/
-          cp room-magic/termux/voice-local-pi5.sh build/dragon-local-voice-v1/room-magic/termux/
+          rm -rf build
+          mkdir -p build/dragon-local-voice-v2/room-magic/termux
+          mkdir -p build/dragon-local-voice-v2/src/voice
+          cp -a local-voice build/dragon-local-voice-v2/
+          cp room-magic/termux/voice-local-pi5.sh build/dragon-local-voice-v2/room-magic/termux/
+          cp room-magic/termux/voice-local-pi5-v2.sh build/dragon-local-voice-v2/room-magic/termux/
+          cp src/voice/localPi.ts build/dragon-local-voice-v2/src/voice/
+          find build -type d -name '__pycache__' -prune -exec rm -rf {} +
+          find build -type f \( -name '.env' -o -name '*.wav' -o -name '*.onnx' -o -name '*.pt' -o -name '*.pth' \) -print -quit | grep -q . && {
+            echo 'HANDOFF_SECRET_OR_WEIGHT=FAIL'
+            exit 1
+          } || true
           (
             cd build
-            zip -qr dragon-local-voice-v1-handoff.zip dragon-local-voice-v1
+            zip -qr dragon-local-voice-v2-handoff.zip dragon-local-voice-v2
+            sha256sum dragon-local-voice-v2-handoff.zip > dragon-local-voice-v2-handoff.sha256
           )
-          test -s build/dragon-local-voice-v1-handoff.zip
-          sha256sum build/dragon-local-voice-v1-handoff.zip | tee build/dragon-local-voice-v1-handoff.sha256
-          echo 'PORTABLE_VOICE_HANDOFF=PASS'
+          test -s build/dragon-local-voice-v2-handoff.zip
+          grep -Eq '^[0-9a-f]{64}  dragon-local-voice-v2-handoff\.zip$' build/dragon-local-voice-v2-handoff.sha256
+          echo 'PORTABLE_V2_CHECKSUM_PATH=PASS'
+          echo 'PORTABLE_VOICE_V2_HANDOFF=PASS'
 
-      - name: Upload portable handoff
+      - name: Upload portable V2 handoff
         uses: actions/upload-artifact@v4
         with:
-          name: dragon-local-voice-v1-handoff
+          name: dragon-local-voice-v2-handoff
           path: |
-            build/dragon-local-voice-v1-handoff.zip
-            build/dragon-local-voice-v1-handoff.sha256
+            build/dragon-local-voice-v2-handoff.zip
+            build/dragon-local-voice-v2-handoff.sha256
           if-no-files-found: error
           retention-days: 14
