@@ -6,6 +6,7 @@ TOKEN="${DRAGON_LOCAL_VOICE_TOKEN:-}"
 PROFILE="${DRAGON_LOCAL_VOICE_PROFILE:-whatsapp_natural}"
 TEXT="${*:-}"
 OUT="${DRAGON_LOCAL_VOICE_OUT:-$HOME/dragon-voice-reply.wav}"
+MAX_TEXT=1200
 
 if [ -z "$VOICE_URL" ]; then
   echo 'DRAGON_LOCAL_VOICE_URL=MISS'
@@ -18,6 +19,11 @@ fi
 if [ -z "$TEXT" ]; then
   echo 'usage: voice-local-pi5.sh "text to speak"'
   exit 4
+fi
+if [ "${#TEXT}" -gt "$MAX_TEXT" ]; then
+  echo "VOICE_TEXT_TOO_LONG=${#TEXT}"
+  echo "VOICE_TEXT_MAX=$MAX_TEXT"
+  exit 5
 fi
 
 PAYLOAD="$(python - "$TEXT" "$PROFILE" <<'PY'
