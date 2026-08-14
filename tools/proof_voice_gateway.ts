@@ -41,10 +41,11 @@ const current = normalizeVoiceUsage(
 );
 const accepted = reserveVoiceBudget(current, { maxRequests: 6, maxCharacters: 2_400 }, 400);
 assert.equal(accepted.allowed, true);
-if (accepted.allowed) {
-  assert.equal(accepted.next.requestCount, 6);
-  assert.equal(accepted.next.characterCount, 2_400);
+if (!accepted.allowed) {
+  throw new Error('Expected accepted voice budget reservation');
 }
+assert.equal(accepted.next.requestCount, 6);
+assert.equal(accepted.next.characterCount, 2_400);
 
 const blockedByRequests = reserveVoiceBudget(
   accepted.next,
