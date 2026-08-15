@@ -12,9 +12,11 @@ SERVICE_FILE="$SERVICE_DIR/dragon-local-voice-v2.service"
 CONFIG_ENV="$V2_HOME/runtime.env"
 REFERENCE_DIR="$V2_HOME/references"
 CACHE_DIR="$V2_HOME/cache"
-ENV_MARKER="$V2_HOME/.kokoro-pi5-lite-v1"
+ENV_MARKER="$V2_HOME/.kokoro-pi5-lite-v2"
 KOKORO_SHA="dfb907a02bba8152ca444717ca5d78747ccb4bec"
 MISAKI_SHA="fba1236595f2d2bf21d414ba6e57d25256afada3"
+TORCH_VERSION="2.13.0+cpu"
+TORCH_CPU_INDEX="https://download.pytorch.org/whl/cpu"
 
 printf '%s\n' '=== UNIVERSAL DRAGON HUMAN VOICE SOUL V2 INSTALL ==='
 
@@ -54,7 +56,7 @@ test -s "$V2_HOME/kokoro_pi5_lite.py"
 test -s "$V2_HOME/profiles-v2.json"
 echo 'V2_RUNTIME_FILES=PASS'
 
-EXPECTED_MARKER="kokoro=$KOKORO_SHA misaki=$MISAKI_SHA frontend=espeak-spacy-free"
+EXPECTED_MARKER="kokoro=$KOKORO_SHA misaki=$MISAKI_SHA frontend=espeak-spacy-free torch=$TORCH_VERSION"
 CURRENT_MARKER="$(cat "$ENV_MARKER" 2>/dev/null || true)"
 if [ "$CURRENT_MARKER" != "$EXPECTED_MARKER" ]; then
   echo 'V2_ENV_REBUILD=YES'
@@ -62,6 +64,18 @@ if [ "$CURRENT_MARKER" != "$EXPECTED_MARKER" ]; then
   rm -rf "$VENV"
   python3 -m venv "$VENV"
   "$VENV/bin/python" -m pip install --upgrade pip setuptools wheel
+
+  "$VENV/bin/python" -m pip install \
+    --index-url "$TORCH_CPU_INDEX" \
+    "torch==$TORCH_VERSION"
+
+  "$VENV/bin/python" - <<'PY'
+import torch
+assert torch.version.cuda is None, torch.version.cuda
+print(f"TORCH_VERSION={torch.__version__}")
+print("TORCH_CPU_ONLY=PASS")
+PY
+
   "$VENV/bin/python" -m pip install --prefer-binary -r "$V2_HOME/requirements-v2.txt"
 
   "$VENV/bin/python" -m pip install --no-deps \
@@ -89,14 +103,17 @@ fi
 
 "$VENV/bin/python" - <<'PY'
 import importlib.util
+import torch
 from kokoro.model import KModel
 from misaki.espeak import EspeakFallback
 import kokoro_pi5_lite
 assert importlib.util.find_spec('kokoro') is not None
 assert importlib.util.find_spec('misaki') is not None
+assert torch.version.cuda is None
 print('KOKORO_MODEL_IMPORT=PASS')
 print('ESPEAK_G2P_IMPORT=PASS')
 print('SPACY_REQUIRED=NO')
+print('CUDA_DEPENDENCY_REQUIRED=NO')
 print('KOKORO_PI5_LITE_ENV=PASS')
 PY
 echo 'KOKORO_V2_ENV=PASS'
