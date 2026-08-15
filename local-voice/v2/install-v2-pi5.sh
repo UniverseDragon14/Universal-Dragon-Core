@@ -49,6 +49,7 @@ export PIP_CACHE_DIR
 export HF_HOME="$CACHE_DIR/huggingface"
 export TORCH_HOME="$CACHE_DIR/torch"
 export XDG_CACHE_HOME="$CACHE_DIR"
+export PYTHONPATH="$V2_HOME${PYTHONPATH:+:$PYTHONPATH}"
 
 install -m 0644 "$SOURCE_DIR/dragon_voice_v2_server.py" "$V2_HOME/dragon_voice_v2_server.py"
 install -m 0644 "$SOURCE_DIR/voice_soul_v2.py" "$V2_HOME/voice_soul_v2.py"
@@ -66,9 +67,24 @@ echo "V2_CACHE_DIR=$CACHE_DIR"
 
 EXPECTED_MARKER="kokoro=$KOKORO_SHA misaki=$MISAKI_SHA frontend=espeak-spacy-free torch=$TORCH_VERSION"
 CURRENT_MARKER="$(cat "$ENV_MARKER" 2>/dev/null || true)"
-if [ "$CURRENT_MARKER" != "$EXPECTED_MARKER" ]; then
+ENV_OK=0
+if [ "$CURRENT_MARKER" = "$EXPECTED_MARKER" ] && [ -x "$VENV/bin/python" ]; then
+  if PYTHONPATH="$V2_HOME" "$VENV/bin/python" - <<'PY' >/dev/null 2>&1
+import torch
+from kokoro.model import KModel
+from misaki.espeak import EspeakFallback
+import kokoro_pi5_lite
+assert torch.version.cuda is None
+PY
+  then
+    ENV_OK=1
+  fi
+fi
+
+if [ "$ENV_OK" -ne 1 ]; then
   echo 'V2_ENV_REBUILD=YES'
   systemctl --user stop dragon-local-voice-v2.service 2>/dev/null || true
+  rm -f "$ENV_MARKER"
   rm -rf "$VENV"
   python3 -m venv "$VENV"
   "$VENV/bin/python" -m pip install --upgrade pip setuptools wheel
@@ -104,12 +120,22 @@ from .model import KModel
 __all__ = ['KModel']
 PY
 
+  PYTHONPATH="$V2_HOME" "$VENV/bin/python" - <<'PY'
+import torch
+from kokoro.model import KModel
+from misaki.espeak import EspeakFallback
+import kokoro_pi5_lite
+assert torch.version.cuda is None
+print('V2_ENV_POSTINSTALL_SANITY=PASS')
+PY
+
   printf '%s\n' "$EXPECTED_MARKER" >"$ENV_MARKER"
 else
   echo 'V2_ENV_REBUILD=NO'
+  echo 'V2_ENV_SANITY=PASS'
 fi
 
-"$VENV/bin/python" - <<'PY'
+PYTHONPATH="$V2_HOME" "$VENV/bin/python" - <<'PY'
 import importlib.util
 import torch
 from kokoro.model import KModel
@@ -120,6 +146,7 @@ assert importlib.util.find_spec('misaki') is not None
 assert torch.version.cuda is None
 print('KOKORO_MODEL_IMPORT=PASS')
 print('ESPEAK_G2P_IMPORT=PASS')
+print('KOKORO_PI5_LITE_IMPORT=PASS')
 print('SPACY_REQUIRED=NO')
 print('CUDA_DEPENDENCY_REQUIRED=NO')
 print('KOKORO_PI5_LITE_ENV=PASS')
@@ -136,6 +163,7 @@ PIP_CACHE_DIR=$PIP_CACHE_DIR
 HF_HOME=$CACHE_DIR/huggingface
 TORCH_HOME=$CACHE_DIR/torch
 XDG_CACHE_HOME=$CACHE_DIR
+PYTHONPATH=$V2_HOME
 EOF
 chmod 600 "$CONFIG_ENV"
 echo 'V2_LOCAL_CONFIG=PASS'
