@@ -32,17 +32,22 @@ expected = {
 }
 require(set(profiles["profiles"]) == expected, "SEVEN_HUMAN_VOICE_IDENTITIES")
 
-requirements = (ROOT / "requirements-v2.txt").read_text(encoding="utf-8")
+requirements_text = (ROOT / "requirements-v2.txt").read_text(encoding="utf-8")
+active_requirements = "\n".join(
+    line.strip()
+    for line in requirements_text.splitlines()
+    if line.strip() and not line.lstrip().startswith("#")
+)
 installer = (ROOT / "install-v2-pi5.sh").read_text(encoding="utf-8")
-require("misaki[en]" not in requirements, "SPACY_EXTRA_REMOVED")
-require("spacy" not in requirements.lower(), "SPACY_RUNTIME_DEPENDENCY_NO")
-require("--no-deps" in installer, "UPSTREAM_NO_DEPS_INSTALL=PASS")
+require("misaki[en]" not in active_requirements, "SPACY_EXTRA_REMOVED")
+require("spacy" not in active_requirements.lower(), "SPACY_RUNTIME_DEPENDENCY_NO")
+require("--no-deps" in installer, "UPSTREAM_NO_DEPS_INSTALL")
 require(
     "dfb907a02bba8152ca444717ca5d78747ccb4bec" in installer
     and "fba1236595f2d2bf21d414ba6e57d25256afada3" in installer,
     "PYTHON313_UPSTREAM_SOURCE_PINS",
 )
-require("kokoro==0.9.4" not in requirements, "PYTHON313_PYPI_BLOCKER_REMOVED")
+require("kokoro==0.9.4" not in active_requirements, "PYTHON313_PYPI_BLOCKER_REMOVED")
 
 lite = (ROOT / "kokoro_pi5_lite.py").read_text(encoding="utf-8")
 require("EspeakFallback" in lite and "KModel" in lite, "KOKORO_ESPEAK_LITE_FRONTEND")
