@@ -12,6 +12,9 @@ SERVICE_FILE="$SERVICE_DIR/dragon-local-voice-v2.service"
 CONFIG_ENV="$V2_HOME/runtime.env"
 REFERENCE_DIR="$V2_HOME/references"
 CACHE_DIR="$V2_HOME/cache"
+ENV_MARKER="$V2_HOME/.kokoro-pi5-lite-v1"
+KOKORO_SHA="dfb907a02bba8152ca444717ca5d78747ccb4bec"
+MISAKI_SHA="fba1236595f2d2bf21d414ba6e57d25256afada3"
 
 printf '%s\n' '=== UNIVERSAL DRAGON HUMAN VOICE SOUL V2 INSTALL ==='
 
@@ -41,20 +44,60 @@ echo 'V2_SYSTEM_DEPENDENCIES=PASS'
 mkdir -p "$V2_HOME" "$REFERENCE_DIR" "$CACHE_DIR/huggingface" "$CACHE_DIR/torch" "$SERVICE_DIR"
 install -m 0644 "$SOURCE_DIR/dragon_voice_v2_server.py" "$V2_HOME/dragon_voice_v2_server.py"
 install -m 0644 "$SOURCE_DIR/voice_soul_v2.py" "$V2_HOME/voice_soul_v2.py"
+install -m 0644 "$SOURCE_DIR/kokoro_pi5_lite.py" "$V2_HOME/kokoro_pi5_lite.py"
 install -m 0644 "$SOURCE_DIR/profiles-v2.json" "$V2_HOME/profiles-v2.json"
 install -m 0644 "$SOURCE_DIR/requirements-v2.txt" "$V2_HOME/requirements-v2.txt"
 install -m 0644 "$SOURCE_DIR/requirements-nano.txt" "$V2_HOME/requirements-nano.txt"
 
 test -s "$V2_HOME/dragon_voice_v2_server.py"
+test -s "$V2_HOME/kokoro_pi5_lite.py"
 test -s "$V2_HOME/profiles-v2.json"
 echo 'V2_RUNTIME_FILES=PASS'
 
-python3 -m venv "$VENV"
-"$VENV/bin/python" -m pip install --upgrade pip setuptools wheel
-"$VENV/bin/python" -m pip install --prefer-binary -r "$V2_HOME/requirements-v2.txt"
+EXPECTED_MARKER="kokoro=$KOKORO_SHA misaki=$MISAKI_SHA frontend=espeak-spacy-free"
+CURRENT_MARKER="$(cat "$ENV_MARKER" 2>/dev/null || true)"
+if [ "$CURRENT_MARKER" != "$EXPECTED_MARKER" ]; then
+  echo 'V2_ENV_REBUILD=YES'
+  systemctl --user stop dragon-local-voice-v2.service 2>/dev/null || true
+  rm -rf "$VENV"
+  python3 -m venv "$VENV"
+  "$VENV/bin/python" -m pip install --upgrade pip setuptools wheel
+  "$VENV/bin/python" -m pip install --prefer-binary -r "$V2_HOME/requirements-v2.txt"
+
+  "$VENV/bin/python" -m pip install --no-deps \
+    "https://github.com/hexgrad/misaki/archive/${MISAKI_SHA}.tar.gz"
+  "$VENV/bin/python" -m pip install --no-deps \
+    "https://github.com/hexgrad/kokoro/archive/${KOKORO_SHA}.tar.gz"
+
+  SITE_PACKAGES="$("$VENV/bin/python" - <<'PY'
+import site
+print(site.getsitepackages()[0])
+PY
+)"
+  KOKORO_INIT="$SITE_PACKAGES/kokoro/__init__.py"
+  test -f "$KOKORO_INIT"
+  cat >"$KOKORO_INIT" <<'PY'
+__version__ = '0.9.4-pi5-lite'
+from .model import KModel
+__all__ = ['KModel']
+PY
+
+  printf '%s\n' "$EXPECTED_MARKER" >"$ENV_MARKER"
+else
+  echo 'V2_ENV_REBUILD=NO'
+fi
+
 "$VENV/bin/python" - <<'PY'
-from kokoro import KModel, KPipeline
-print("KOKORO_IMPORT=PASS")
+import importlib.util
+from kokoro.model import KModel
+from misaki.espeak import EspeakFallback
+import kokoro_pi5_lite
+assert importlib.util.find_spec('kokoro') is not None
+assert importlib.util.find_spec('misaki') is not None
+print('KOKORO_MODEL_IMPORT=PASS')
+print('ESPEAK_G2P_IMPORT=PASS')
+print('SPACY_REQUIRED=NO')
+print('KOKORO_PI5_LITE_ENV=PASS')
 PY
 echo 'KOKORO_V2_ENV=PASS'
 
@@ -100,7 +143,7 @@ systemctl --user daemon-reload
 systemctl --user enable --now dragon-local-voice-v2.service
 echo 'V2_SERVICE_INSTALL=PASS'
 
-for _ in $(seq 1 45); do
+for _ in $(seq 1 60); do
   if curl --silent --fail "http://127.0.0.1:$PORT/health" >"$V2_HOME/health.json"; then
     break
   fi
@@ -111,6 +154,7 @@ test -s "$V2_HOME/health.json"
 grep -q '"ok":true' "$V2_HOME/health.json"
 grep -q '"auth_configured":true' "$V2_HOME/health.json"
 grep -q '"kokoro_installed":true' "$V2_HOME/health.json"
+grep -q '"kokoro_frontend":"espeak-spacy-free"' "$V2_HOME/health.json"
 grep -q '"paid_api_required":false' "$V2_HOME/health.json"
 echo 'HUMAN_VOICE_V2_HEALTH=PASS'
 
@@ -130,7 +174,7 @@ grep -q '"schema":"dragon.voice-soul.v2"' "$V2_HOME/plan-proof.json"
 grep -q '"profile":"whatsapp_natural"' "$V2_HOME/plan-proof.json"
 echo 'HUMAN_VOICE_SOUL_V2_PLAN=PASS'
 
-curl --silent --show-error --fail --max-time 900 \
+curl --silent --show-error --fail --max-time 1200 \
   -D "$V2_HOME/kokoro-proof.headers" \
   -H "Authorization: Bearer $DRAGON_VOICE_TOKEN" \
   -H 'Content-Type: application/json' \
@@ -141,6 +185,7 @@ curl --silent --show-error --fail --max-time 900 \
 test -s "$V2_HOME/kokoro-proof.wav"
 file "$V2_HOME/kokoro-proof.wav" | grep -qi 'wave audio'
 grep -qi '^X-Dragon-Voice-Engine: kokoro' "$V2_HOME/kokoro-proof.headers"
+grep -qi '^X-Dragon-Voice-G2P: espeak-spacy-free' "$V2_HOME/kokoro-proof.headers"
 grep -qi '^X-Dragon-Paid-API: no' "$V2_HOME/kokoro-proof.headers"
 echo 'KOKORO_V2_WAV=PASS'
 
