@@ -27,11 +27,8 @@ V1_URL = os.environ.get("DRAGON_V1_URL", "http://127.0.0.1:8123").rstrip("/")
 MAX_TEXT_CHARS = int(os.environ.get("DRAGON_VOICE_MAX_TEXT", "1200"))
 ALLOW_NANO_WITHOUT_REFERENCE = os.environ.get("DRAGON_V2_ALLOW_NANO_WITHOUT_REFERENCE", "0") == "1"
 
-app = FastAPI(title="Universal Dragon Human Voice Soul", version="2.0.0")
-_engine_lock = threading.Lock()
+app = FastAPI(title="Universal Dragon Human Voice Soul", version="2.1.0")
 _synthesis_lock = threading.Lock()
-_kokoro_model: Any | None = None
-_kokoro_pipelines: dict[str, Any] = {}
 _nano_model: Any | None = None
 
 
@@ -91,42 +88,18 @@ def _pcm16_wav(audio: Any, sample_rate: int) -> bytes:
 
 
 def _kokoro_engine(plan: dict[str, Any]) -> tuple[bytes, dict[str, str]]:
-    """Synthesize with the lightweight multi-voice Kokoro CPU engine."""
-    global _kokoro_model
+    """Synthesize with Kokoro KModel and a spaCy-free eSpeak English frontend."""
+    if not _module_ready("kokoro") or not _module_ready("misaki"):
+        raise RuntimeError("kokoro_lite_not_installed")
 
-    if not _module_ready("kokoro"):
-        raise RuntimeError("kokoro_not_installed")
+    from kokoro_pi5_lite import synthesize
 
-    from kokoro import KModel, KPipeline
-    import numpy as np
-
-    voice_id = str(plan["kokoro"]["voice"])
-    lang_code = "b" if voice_id.startswith("bf_") or voice_id.startswith("bm_") else "a"
-
-    with _engine_lock:
-        if _kokoro_model is None:
-            _kokoro_model = KModel(repo_id="hexgrad/Kokoro-82M").to("cpu").eval()
-        pipeline = _kokoro_pipelines.get(lang_code)
-        if pipeline is None:
-            pipeline = KPipeline(lang_code=lang_code, repo_id="hexgrad/Kokoro-82M", model=_kokoro_model)
-            _kokoro_pipelines[lang_code] = pipeline
-
-    chunks: list[Any] = []
-    for _, _, audio in pipeline(
-        plan["spoken_text"],
-        voice=voice_id,
-        speed=float(plan["kokoro"]["speed"]),
-    ):
-        if audio is not None:
-            if hasattr(audio, "detach"):
-                audio = audio.detach().cpu().numpy()
-            chunks.append(np.asarray(audio, dtype=np.float32).reshape(-1))
-
-    if not chunks:
-        raise RuntimeError("kokoro_empty_audio")
-
-    joined = np.concatenate(chunks)
-    return _pcm16_wav(joined, 24000), {"voice": voice_id, "reference": "builtin"}
+    audio, meta = synthesize(
+        str(plan["spoken_text"]),
+        str(plan["kokoro"]["voice"]),
+        float(plan["kokoro"]["speed"]),
+    )
+    return _pcm16_wav(audio, 24000), meta
 
 
 def _nano_engine(plan: dict[str, Any]) -> tuple[bytes, dict[str, str]]:
@@ -144,10 +117,9 @@ def _nano_engine(plan: dict[str, Any]) -> tuple[bytes, dict[str, str]]:
     if not use_reference and not ALLOW_NANO_WITHOUT_REFERENCE:
         raise RuntimeError("nano_reference_missing")
 
-    with _engine_lock:
-        if _nano_model is None:
-            _nano_model = ChatterboxTurboTTS.from_pretrained(device="cpu", nano=True)
-        model = _nano_model
+    if _nano_model is None:
+        _nano_model = ChatterboxTurboTTS.from_pretrained(device="cpu", nano=True)
+    model = _nano_model
 
     kwargs: dict[str, Any] = {}
     if use_reference:
@@ -240,7 +212,8 @@ def health() -> dict[str, Any]:
         "ok": True,
         "schema": "dragon.voice-soul.health.v2",
         "auth_configured": bool(ACCESS_TOKEN),
-        "kokoro_installed": _module_ready("kokoro"),
+        "kokoro_installed": _module_ready("kokoro") and _module_ready("misaki"),
+        "kokoro_frontend": "espeak-spacy-free",
         "nano_installed": _module_ready("chatterbox"),
         "piper_v1_fallback": V1_URL,
         "reference_voice_count": references,
@@ -323,6 +296,7 @@ def speak_endpoint(request: SpeakV2Request, authorization: str | None = Header(d
                         "X-Dragon-Voice-Reaction": str(plan["reaction"]),
                         "X-Dragon-Voice-Reference": meta["reference"],
                         "X-Dragon-Voice-Model": meta["voice"],
+                        "X-Dragon-Voice-G2P": meta.get("g2p", "n/a"),
                         "X-Dragon-Engine-Fallback": "yes" if engine_name != engine_order[0] else "no",
                         "X-Dragon-Inference-Ms": str(elapsed_ms),
                         "X-Dragon-Paid-API": "no",
