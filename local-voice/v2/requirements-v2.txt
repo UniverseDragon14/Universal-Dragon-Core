@@ -1,9 +1,15 @@
 fastapi>=0.115,<1
 uvicorn[standard]>=0.34,<1
 pydantic>=2.10,<3
-# PyPI kokoro/misaki 0.9.4 metadata rejects Python 3.13.
-# These exact upstream commits only relax requires-python to <3.14 and were
-# explicitly merged/tested by upstream to enable Python 3.13.
-misaki[en] @ https://github.com/hexgrad/misaki/archive/fba1236595f2d2bf21d414ba6e57d25256afada3.tar.gz
-kokoro @ https://github.com/hexgrad/kokoro/archive/dfb907a02bba8152ca444717ca5d78747ccb4bec.tar.gz
 numpy>=2,<3
+torch>=2.6,<3
+transformers>=4.46,<5
+huggingface-hub>=0.28,<1
+loguru>=0.7,<1
+addict>=2.4,<3
+regex>=2024.11
+phonemizer-fork>=3.3,<4
+espeakng-loader>=0.2,<1
+
+# Kokoro/Misaki Python 3.13 source pins are installed separately with --no-deps
+# by install-v2-pi5.sh so the heavy misaki[en] spaCy chain is never pulled.
