@@ -2,7 +2,6 @@ fastapi>=0.115,<1
 uvicorn[standard]>=0.34,<1
 pydantic>=2.10,<3
 numpy>=2,<3
-torch>=2.6,<3
 transformers>=4.46,<5
 huggingface-hub>=0.28,<1
 loguru>=0.7,<1
@@ -11,5 +10,8 @@ regex>=2024.11
 phonemizer-fork>=3.3,<4
 espeakng-loader>=0.2,<1
 
-# Kokoro/Misaki Python 3.13 source pins are installed separately with --no-deps
-# by install-v2-pi5.sh so the heavy misaki[en] spaCy chain is never pulled.
+# torch is intentionally installed separately from the official PyTorch CPU
+# wheel index by install-v2-pi5.sh. Do not add plain `torch` here: current
+# Linux aarch64 PyPI wheels may pull NVIDIA/CUDA packages that Pi5 cannot use.
+# Kokoro/Misaki Python 3.13 source pins are also installed separately with
+# --no-deps so the heavy misaki[en] spaCy chain is never pulled.
