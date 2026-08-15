@@ -32,6 +32,14 @@ expected = {
 }
 require(set(profiles["profiles"]) == expected, "SEVEN_HUMAN_VOICE_IDENTITIES")
 
+requirements = (ROOT / "requirements-v2.txt").read_text(encoding="utf-8")
+require(
+    "dfb907a02bba8152ca444717ca5d78747ccb4bec" in requirements
+    and "fba1236595f2d2bf21d414ba6e57d25256afada3" in requirements,
+    "PYTHON313_UPSTREAM_SOURCE_PINS",
+)
+require("kokoro==0.9.4" not in requirements, "PYTHON313_PYPI_BLOCKER_REMOVED")
+
 clean = sanitize_spoken_text("Hello <analysis>private thought</analysis> [laugh] human")
 require("private thought" not in clean and "[laugh]" not in clean and clean == "Hello human", "VOICE_SOUL_V2_SANITIZER")
 
