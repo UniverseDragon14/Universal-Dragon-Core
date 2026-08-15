@@ -15,7 +15,7 @@ def require(condition: bool, marker: str) -> None:
     print(f"{marker}=PASS")
 
 
-for filename in ("voice_soul_v2.py", "dragon_voice_v2_server.py"):
+for filename in ("voice_soul_v2.py", "dragon_voice_v2_server.py", "kokoro_pi5_lite.py"):
     source = (ROOT / filename).read_text(encoding="utf-8")
     compile(source, str(ROOT / filename), "exec")
 print("HUMAN_VOICE_V2_PYTHON_SYNTAX=PASS")
@@ -33,12 +33,20 @@ expected = {
 require(set(profiles["profiles"]) == expected, "SEVEN_HUMAN_VOICE_IDENTITIES")
 
 requirements = (ROOT / "requirements-v2.txt").read_text(encoding="utf-8")
+installer = (ROOT / "install-v2-pi5.sh").read_text(encoding="utf-8")
+require("misaki[en]" not in requirements, "SPACY_EXTRA_REMOVED")
+require("spacy" not in requirements.lower(), "SPACY_RUNTIME_DEPENDENCY_NO")
+require("--no-deps" in installer, "UPSTREAM_NO_DEPS_INSTALL=PASS")
 require(
-    "dfb907a02bba8152ca444717ca5d78747ccb4bec" in requirements
-    and "fba1236595f2d2bf21d414ba6e57d25256afada3" in requirements,
+    "dfb907a02bba8152ca444717ca5d78747ccb4bec" in installer
+    and "fba1236595f2d2bf21d414ba6e57d25256afada3" in installer,
     "PYTHON313_UPSTREAM_SOURCE_PINS",
 )
 require("kokoro==0.9.4" not in requirements, "PYTHON313_PYPI_BLOCKER_REMOVED")
+
+lite = (ROOT / "kokoro_pi5_lite.py").read_text(encoding="utf-8")
+require("EspeakFallback" in lite and "KModel" in lite, "KOKORO_ESPEAK_LITE_FRONTEND")
+require("KPipeline" not in lite, "KPIPELINE_SPACY_PATH_BYPASSED")
 
 clean = sanitize_spoken_text("Hello <analysis>private thought</analysis> [laugh] human")
 require("private thought" not in clean and "[laugh]" not in clean and clean == "Hello human", "VOICE_SOUL_V2_SANITIZER")
@@ -67,5 +75,6 @@ require(truth["exact_real_person_voice_claimed"] is False, "REAL_PERSON_CLONE_CL
 server = (ROOT / "dragon_voice_v2_server.py").read_text(encoding="utf-8")
 require("hmac.compare_digest" in server and "if not ACCESS_TOKEN:\n        return False" in server, "V2_FAIL_CLOSED_AUTH")
 require("127.0.0.1:8123" in server, "PROVEN_V1_FALLBACK_WIRED")
+require("espeak-spacy-free" in server, "SPACY_FREE_TRUTH_MARKER")
 
 print("HUMAN_VOICE_SOUL_V2_STATIC_PROOF=PASS")
