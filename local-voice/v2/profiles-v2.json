@@ -1,0 +1,69 @@
+{
+  "schema": "dragon.voice-soul.profiles.v2",
+  "default_profile": "nova_warm",
+  "profiles": {
+    "nova_warm": {
+      "display_name": "NOVA Warm",
+      "persona": "warm adult assistant, clear and reassuring",
+      "kokoro_voice": "af_nova",
+      "kokoro_speed": 0.98,
+      "piper_profile": "nova_warm",
+      "reference_file": "nova_warm.wav",
+      "default_mood": "neutral"
+    },
+    "dragon_playful": {
+      "display_name": "Dragon Playful",
+      "persona": "young-adult-like playful energy, smiling and quick",
+      "kokoro_voice": "af_bella",
+      "kokoro_speed": 1.04,
+      "piper_profile": "dragon_playful",
+      "reference_file": "dragon_playful.wav",
+      "default_mood": "smile"
+    },
+    "dragon_serious": {
+      "display_name": "Dragon Serious",
+      "persona": "firm controlled command voice",
+      "kokoro_voice": "am_onyx",
+      "kokoro_speed": 0.92,
+      "piper_profile": "dragon_serious",
+      "reference_file": "dragon_serious.wav",
+      "default_mood": "serious"
+    },
+    "dragon_deep": {
+      "display_name": "Dragon Deep",
+      "persona": "mature cinematic authority",
+      "kokoro_voice": "am_fenrir",
+      "kokoro_speed": 0.88,
+      "piper_profile": "dragon_deep",
+      "reference_file": "dragon_deep.wav",
+      "default_mood": "confident"
+    },
+    "whatsapp_natural": {
+      "display_name": "WhatsApp Natural",
+      "persona": "casual human voice-note delivery with short natural phrasing",
+      "kokoro_voice": "af_sarah",
+      "kokoro_speed": 1.02,
+      "piper_profile": "whatsapp_natural",
+      "reference_file": "whatsapp_natural.wav",
+      "default_mood": "neutral"
+    },
+    "story_soul": {
+      "display_name": "Story Soul",
+      "persona": "measured storyteller with dramatic pacing",
+      "kokoro_voice": "bm_fable",
+      "kokoro_speed": 0.94,
+      "piper_profile": "story_soul",
+      "reference_file": "story_soul.wav",
+      "default_mood": "curious"
+    },
+    "night_whisper": {
+      "display_name": "Night Whisper",
+      "persona": "soft low-energy late-night presence",
+      "kokoro_voice": "bf_lily",
+      "kokoro_speed": 0.86,
+      "piper_profile": "night_whisper",
+      "reference_file": "night_whisper.wav",
+      "default_mood": "whisper"
+    }
+  }
+}
