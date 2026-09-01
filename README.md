@@ -1,88 +1,68 @@
-# Universal Dragon Core - QBIT NOVA
+# Universal Dragon Core
 
-<p align="center">
-  <img
-    src="docs/assets/qbit-nova-universal-dragon-global-system.jpg"
-    alt="QBIT NOVA Universal Dragon Global System"
-    width="900"
-  />
-</p>
+This repository combines two active experimental tracks:
 
-<p align="center">
-  <strong>Universal Dragon Global System</strong><br>
-  QBIT NOVA · Virtual QCPU · Raspberry Pi 5 · Approval-First Architecture
-</p>
+1. **QBIT NOVA language/runtime history** — Python-hosted parsers, QBC/QVM tools, examples, tests, installers, and design/proof documents.
+2. **Universal Dragon web control dashboard** — React/Vite UI with an Express, Socket.IO, MQTT, and AI-chat server.
 
-UD means Universal Dragon.
+The current QBIT version marker is **1.4.0-dev**.
 
-Creator: Aslam
-Team: Askutty
-Brain: NovaKutty
-Language: QBIT NOVA
-Source extension: `.ud`
-Version: `1.4.0-dev`
-Branch: `nova-v1.4.0-dev`
+## Repository map
 
-QBIT NOVA is the top-level Universal Dragon language. The user writes `.ud` source files only.
+| Path | Current role |
+|---|---|
+| engine | earlier QBIT NOVA parser/token/runtime pipelines |
+| tools | QN/QBC/QVM, guard, installer, packaging, and CLI utilities |
+| tests | contract and regression scripts for the experimental language/runtime |
+| examples/v2 | NOVA, QN, QNOVA, and UD examples |
+| nova-lang | earlier NOVA language runtime, adapters, packages, and launchers |
+| docs | specifications, milestones, proof notes, and truth-boundary documents |
+| src | React control-room dashboard |
+| server.ts | Express/Socket.IO server, AI chat route, MQTT bridge, and static app hosting |
+| ud-terminal | local terminal service/setup helpers |
 
-## Core Identity
+## Web dashboard
 
-QBIT NOVA is not a public Python, C, C++, Java, HTML, or TypeScript project.
+Requirements: Node.js and npm.
 
-Other technologies may exist later only as hidden compiler/runtime targets. The visible language identity is QBIT NOVA.
+~~~bash
+npm install
+npm run dev
+~~~
 
-## Quick Test
+Useful checks:
 
-```bash
-nova doctor
-nova run examples/v2/qbit_nova_world.ud
-nova qbit examples/v2/qbit_test.qnova
-```
+~~~bash
+npm run lint
+npm run build
+~~~
 
-## QBIT NOVA Example
+Optional server configuration is supplied through environment variables:
 
-```ud
-nova universal_dragon
-creator aslam
-team askutty
-brain novakutty
+- PORT
+- GROQ_API_KEY and optional GROQ_MODEL
+- OPENAI_API_KEY and optional OPENAI_MODEL
+- MQTT_BROKER and MQTT_TOPIC
 
-say "QBIT NOVA language online"
+Routes currently exposed by the server:
 
-qbit dragon = |0>
-h dragon
-measure dragon
+- GET /api/health
+- POST /api/chat
+- Socket.IO events for MQTT status and parsed Dragon Eye messages
 
-guard:
-  owner_approval required
-  dangerous_action deny
-```
+## What is real and what is simulated
 
-<!-- NOVA_QBIT_STATUS_START -->
-## NOVA QBIT Test Status
+- AI chat can call Groq or OpenAI when a server-side key is configured.
+- MQTT can subscribe to a configured broker and forward valid messages.
+- The browser dashboard currently generates several CPU, temperature, spatial, log, and auto-code values with timers/random data. Those panels are demonstrations until they are connected to authenticated device telemetry.
+- The QBIT code is a software language/runtime and virtual simulation research line. It does not turn a Raspberry Pi, phone, GPU, or CPU into physical quantum hardware.
 
-[![NOVA QBIT Tests](https://github.com/UniverseDragon14/Universal-Dragon-Core/actions/workflows/qbit-tests.yml/badge.svg?branch=nova-v1.4.0-dev)](https://github.com/UniverseDragon14/Universal-Dragon-Core/actions/workflows/qbit-tests.yml)
+## Security boundary
 
-Current verified QBIT features:
+The server binds to all interfaces and the current chat route is not an authentication system. Keep development instances on a trusted network or place them behind authenticated TLS access, restrictive origins, rate limits, and request-size controls.
 
-- QBIT NOVA `.ud` source preprocessor
-- Single qbit gates: H, X, Z
-- State and probability display
-- Measurement collapse
-- Multi-qbit register
-- CNOT gate
-- Bell-style linked state
-- 20-run Bell repeat stability test
-- Automated CI testing on `nova-v1.4.0-dev`
+Never commit model keys, broker credentials, device addresses, approval tokens, private host data, or live audit exports.
 
-Latest locked milestone:
+## Project status
 
-`QBIT NOVA v1.4.0-dev has started as the Universal Dragon language branch.`
-
-<!-- NOVA_QBIT_STATUS_END -->
-
-## Safety
-
-QBIT NOVA allows safe adapter output and owner approval flows.
-
-It blocks raw terminal execution through external adapters and does not allow automatic live call answering or dangerous system mutation without approval.
+Research/development repository. The tests and receipts prove specific software paths only; they do not prove that every documented Pi service, robot, camera, WhatsApp bridge, or hardware module is live.
