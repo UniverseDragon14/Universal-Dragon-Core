@@ -1,8 +1,8 @@
 # Universal Dragon Core Branch Map
 
-Inspected on **2026-09-01**. All **23 reachable branches** are accounted for.
+Inspected on **2026-09-01**. All **23 reachable branches** are accounted for. The implementation tips were recorded before documentation-only audit commits.
 
-| Branch | Inspected tip | Purpose / state |
+| Branch | Inspected implementation tip | Purpose / state |
 |---|---|---|
 | `Uni` | `993a7caa7ef9` | NOVA install-page redirect |
 | `agent/add-qbit-nova-language-artwork` | `9003a28ded8e` | QBIT NOVA hero artwork and install-page update |
