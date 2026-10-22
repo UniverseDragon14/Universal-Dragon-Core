@@ -1,5 +1,13 @@
 # Universal Dragon Core
 
+UD means Universal Dragon.
+
+Creator: Aslam
+Team: Askutty
+Brain: NovaKutty
+Language: QBIT NOVA
+Source extension: `.ud`
+
 This repository combines two active experimental tracks:
 
 1. **QBIT NOVA language/runtime history** — Python-hosted parsers, QBC/QVM tools, examples, tests, installers, and design/proof documents.
