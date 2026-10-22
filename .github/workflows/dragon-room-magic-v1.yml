@@ -1,0 +1,90 @@
+name: Dragon Room Magic V1
+
+on:
+  push:
+    branches:
+      - feat/dragon-room-magic-voice-soul-v1
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig*.json'
+      - 'vite.config.*'
+      - 'server.ts'
+      - 'src/components/DragonResonance.tsx'
+      - 'src/components/QuickActions.tsx'
+      - 'src/App.tsx'
+      - 'src/voice/**'
+      - 'room-magic/**'
+      - 'tools/proof_voice_soul.ts'
+      - '.github/workflows/dragon-room-magic-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npm run lint
+
+      - name: Voice Soul deterministic proof
+        run: npx tsx tools/proof_voice_soul.ts
+
+      - name: Production build
+        run: npm run build
+
+      - name: Verify portable Termux assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s room-magic/termux/awaken.html
+          test -s room-magic/termux/awaken-v3.sh
+          test -s room-magic/termux/voice-eleven-v3.sh
+          test -s room-magic/termux/install-v1.sh
+          test -s room-magic/elevenlabs.env.example
+          bash -n room-magic/termux/awaken-v3.sh
+          bash -n room-magic/termux/voice-eleven-v3.sh
+          bash -n room-magic/termux/install-v1.sh
+          grep -q '>DRAGON<' room-magic/termux/awaken.html
+          grep -q '>RESONANCE<' room-magic/termux/awaken.html
+          grep -q 'dragonAwaken' room-magic/termux/awaken.html
+          grep -q '^ELEVENLABS_API_KEY=$' room-magic/elevenlabs.env.example
+          grep -q '^ELEVENLABS_VOICE_ID=$' room-magic/elevenlabs.env.example
+          grep -q '^DRAGON_VOICE_ACCESS_TOKEN=$' room-magic/elevenlabs.env.example
+          grep -q 'authorizeVoiceRequest' server.ts
+          grep -q 'voice_api_disabled' server.ts
+          grep -q -- '--directory "$WEB_ROOT"' room-magic/termux/awaken-v3.sh
+          echo 'TERMUX_PORTABLE_ASSETS=PASS'
+
+      - name: Prove Termux handoff installer
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/dragon-home"
+          export DRAGON_ROOM_MAGIC_HOME="$RUNNER_TEMP/dragon-target"
+          export DRAGON_ROOM_MAGIC_BACKUPS="$RUNNER_TEMP/dragon-backups"
+          mkdir -p "$HOME"
+          bash room-magic/termux/install-v1.sh | tee "$RUNNER_TEMP/install-proof.log"
+          grep -q '^SECRET_FILES_TOUCHED=NO$' "$RUNNER_TEMP/install-proof.log"
+          grep -q '^ROOM_MAGIC_HANDOFF_INSTALL=PASS$' "$RUNNER_TEMP/install-proof.log"
+          test -s "$DRAGON_ROOM_MAGIC_HOME/awaken.html"
+          test -x "$DRAGON_ROOM_MAGIC_HOME/awaken-v3.sh"
+          test -x "$DRAGON_ROOM_MAGIC_HOME/voice-eleven-v3.sh"
+          echo 'TERMUX_HANDOFF_PROOF=PASS'
