@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { Header } from './components/Header';
-import { TelemetryPanel } from './components/TelemetryPanel';
-import { SpatialMap } from './components/SpatialMap';
 import { Terminal } from './components/Terminal';
 import { DragonEye } from './components/DragonEye';
 import { RobotControlPanel } from './components/RobotControlPanel';
@@ -15,6 +13,9 @@ import { QuickActions } from './components/QuickActions';
 import { io } from 'socket.io-client';
 import { TelemetryData, MapPoint } from './types';
 import { MOCK_LOG_MESSAGES, MOCK_SYSTEM_EVENTS, MOCK_SYSTEM_ERRORS } from './constants';
+
+const TelemetryPanel = React.lazy(() => import('./components/TelemetryPanel').then(module => ({ default: module.TelemetryPanel })));
+const SpatialMap = React.lazy(() => import('./components/SpatialMap').then(module => ({ default: module.SpatialMap })));
 
 // Mock data generation helpers
 const generateCpuData = (length: number): TelemetryData[] => 
@@ -120,7 +121,9 @@ export default function App() {
         {/* Left Column: Telemetry, Dragon Eye Vision & Auto Code Engine */}
         <div className="lg:col-span-3 flex flex-col gap-6">
           <div className="flex-1">
-            <TelemetryPanel data={cpuData} />
+            <Suspense fallback={<div className="glass-panel p-4 min-h-32" role="status">Loading telemetry…</div>}>
+              <TelemetryPanel data={cpuData} />
+            </Suspense>
           </div>
           <div className="flex-1">
             <DragonEye />
@@ -133,7 +136,9 @@ export default function App() {
         {/* Middle Column: Spatial Map, Terminal & Voice Assistant */}
         <div className="lg:col-span-6 flex flex-col gap-6">
           <div className="flex-1">
-            <SpatialMap data={mapData} />
+            <Suspense fallback={<div className="glass-panel p-4 min-h-32" role="status">Loading spatial map…</div>}>
+              <SpatialMap data={mapData} />
+            </Suspense>
           </div>
           <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
             <Terminal logs={logs} />
