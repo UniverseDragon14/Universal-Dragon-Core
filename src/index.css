@@ -7,14 +7,16 @@
 }
 
 :root {
-  --bg-color: #050505;
-  --card-bg: #111111;
-  --text-primary: #E0E0E0;
-  --text-secondary: #888888;
-  --accent-neon: #00FFCC;
-  --accent-danger: #FF3366;
+  --bg-color: #000000;
+  --card-bg: rgba(10, 10, 10, 0.8);
+  --text-primary: #FFFFFF;
+  --text-secondary: #AAAAAA;
+  --accent-neon: #FF3300; /* Ares Red */
+  --accent-nova: #00FFFF; /* Nova Cyan */
+  --accent-danger: #FF0000;
   --accent-warn: #FFCC00;
-  --line-color: #222222;
+  --line-color: rgba(255, 51, 0, 0.2);
+  --grid-color: rgba(0, 255, 255, 0.05);
 }
 
 body {
@@ -22,23 +24,61 @@ body {
   color: var(--text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.tron-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  perspective: 1000px;
+  z-index: -1;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, #0a0a0a 0%, #000000 100%);
+}
+
+.tron-grid-inner {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background-image: 
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 50px 50px;
+  transform: rotateX(60deg);
+  animation: grid-move 20s linear infinite;
+}
+
+@keyframes grid-move {
+  0% { transform: rotateX(60deg) translateY(0); }
+  100% { transform: rotateX(60deg) translateY(50px); }
 }
 
 .glass-panel {
   background: var(--card-bg);
   border: 1px solid var(--line-color);
-  border-radius: 8px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  box-shadow: 0 0 20px rgba(255, 51, 0, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .neon-text {
+  color: var(--accent-nova);
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.ares-text {
   color: var(--accent-neon);
-  text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+  text-shadow: 0 0 10px rgba(255, 51, 0, 0.5);
 }
 
 .danger-text {
   color: var(--accent-danger);
-  text-shadow: 0 0 10px rgba(255, 51, 102, 0.3);
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
 }
 
 .data-value {

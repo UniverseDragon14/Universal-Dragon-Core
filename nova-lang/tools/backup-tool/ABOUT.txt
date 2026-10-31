@@ -1,0 +1,4 @@
+Tool: backup-tool
+Type: NOVA tool
+Runtime: nova run main.nova
+Status: created

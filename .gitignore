@@ -1,8 +1,14 @@
-node_modules/
-build/
-dist/
-coverage/
+# NOVA generated files
+nova-lang/backups/
+nova-lang/restore-preview/
+nova-lang/memory/
+*.tar.gz
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor / OS
 .DS_Store
-*.log
-.env*
-!.env.example
+.vscode/
+.idea/

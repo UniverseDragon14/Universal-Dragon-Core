@@ -1,5 +1,5 @@
 {
-  "name": "Universal Dragon OS",
+  "name": "UNIVERSAL_DRAGON_GRID",
   "description": "A futuristic dashboard for a custom Raspberry Pi 5 robotics operating system.",
-  "requestFramePermissions": []
+  "requestFramePermissions": ["microphone"]
 }

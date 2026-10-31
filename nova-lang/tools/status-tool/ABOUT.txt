@@ -1,0 +1,5 @@
+Tool: status-tool
+Type: status
+Runtime: nova run main.nova
+Created by: NOVATOOL v0.2
+Meaning: Universal Dragon tool-language module

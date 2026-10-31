@@ -1,20 +1,32 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Universal Dragon Core - NOVA
 
-# Run and deploy your AI Studio app
+Creator: Aslam  
+Core: NOVA  
+Branch: Termux Mobile Field Lab  
+Runtime: Python  
 
-This contains everything you need to run your app locally.
+## Current Version
 
-View your app in AI Studio: https://ai.studio/apps/4c482296-31ca-4951-95e0-264eb16908c5
+NOVA Python Core v1.3.1
 
-## Run Locally
+## Features
 
-**Prerequisites:**  Node.js
+- `.nova` file runner
+- variables
+- math calculation
+- if/end blocks
+- repeat/end loops
+- define/call functions
+- function arguments
+- use/import library files
+- doctor check
+- manifest generation
+- export/import preview
+- Pi5 syncpack and synccheck
 
+## Quick Test
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```bash
+nova version
+nova doctor
+nova synccheck

@@ -1,0 +1,11 @@
+NOVA ADAPTER STATUS
+Generated: Thu Jun 11 12:32:08 +04 2026
+
+READY  Bash -> /data/data/com.termux/files/usr/bin/bash
+READY  Python -> /data/data/com.termux/files/usr/bin/python
+READY  Node.js -> /data/data/com.termux/files/usr/bin/node
+READY  C clang -> /data/data/com.termux/files/usr/bin/clang
+READY  C++ g++ -> /data/data/com.termux/files/usr/bin/g++
+READY  Rust -> /data/data/com.termux/files/usr/bin/rustc
+READY  Java -> /data/data/com.termux/files/usr/bin/java
+READY  SQLite -> /data/data/com.termux/files/usr/bin/sqlite3
